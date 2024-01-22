@@ -5,7 +5,7 @@
 #include <vector>
 #include <alsa/asoundlib.h>
 
-namespace pl {
+namespace player {
     struct Alsa {
         u8 channels;
         unsigned periodTime;
@@ -247,4 +247,4 @@ namespace pl {
             snd_pcm_close(handle);
         }
     };
-};
+}; /* namespace player */

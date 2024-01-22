@@ -169,7 +169,7 @@ OpusPlay(const std::string_view s)
     putchar('\n');
 
     /* some songs give !2 channels, and speedup playback */
-    pl::Alsa p("default", channels, ChunkSize);
+    player::Alsa p("default", channels, ChunkSize);
     p.Print();
 
     s16* chunk = new s16[ChunkSize];
@@ -268,7 +268,7 @@ OpusPlay(const std::string_view s)
 void
 WavPlay(const std::string_view s)
 {
-    pl::Alsa p("default", 2, g::periodTime, 48000);
+    player::Alsa p("default", 2, g::periodTime, 48000);
     WavFile wav(s, STRIDE);
     wav.channels = p.channels;
 
