@@ -12,6 +12,7 @@
 #include <opus/opusfile.h>
 #include <mutex>
 #include <condition_variable>
+#include <portaudio.h>
 
 
 /* gloabls */

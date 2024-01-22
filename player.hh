@@ -2,6 +2,7 @@
 #include "util.hh"
 #include "main.hh"
 
+#include <portaudio.h>
 #include <vector>
 #include <alsa/asoundlib.h>
 
