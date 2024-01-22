@@ -15,6 +15,7 @@ LDFLAGS := -lasound -lm $(OPUS_LIB)
 SRCD := .
 BD := ./build
 BIN := kmp
+EXEC := $(BD)/$(BIN)
 
 SRCS := $(shell find $(SRCD) -name '*.cc')
 OBJ := $(SRCS:%=$(BD)/%.o)
@@ -22,15 +23,15 @@ OBJ := $(SRCS:%=$(BD)/%.o)
 # release build
 all: CC += -flto=auto $(SAFE_STACK) 
 all: CFLAGS += -O2 -march=sandybridge $(WARNING) -DNDEBUG
-all: $(BD)/$(BIN)
+all: $(EXEC)
 
 # debug build
 debug: CC += $(ASAN)
 debug: CFLAGS += -O0 $(DEBUG) $(WARNING) $(WNO)
-debug: $(BD)/$(BIN)
+debug: $(EXEC)
 
 # arcane rules to build everything
-$(BD)/$(BIN): $(OBJ)
+$(EXEC): $(OBJ)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
 $(BD)/%.cc.o: %.cc Makefile dbg.mk *.hh
@@ -39,10 +40,10 @@ $(BD)/%.cc.o: %.cc Makefile dbg.mk *.hh
 
 PREFIX = /usr/local
 
-install: $(BD)/$(BIN)
-	strip $(BD)/$(BIN)
+install: $(EXEC)
+	strip $(EXEC)
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	cp -f $(BD)/$(BIN) $(DESTDIR)$(PREFIX)/bin
+	cp -f $(EXEC) $(DESTDIR)$(PREFIX)/bin
 	chmod 755 $(DESTDIR)$(PREFIX)/bin/$(BIN)
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/$(BIN)
