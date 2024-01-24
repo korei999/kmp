@@ -4,7 +4,7 @@
 
 #define STRIDE (g::sampleRate * g::channels * sizeof(s16))
 
-pointer<s16> wav_load(const std::string_view path, size_t idk);
+pointer<s16> WavLoad(const std::string_view path, size_t idk);
 
 struct WavFile {
     pointer<s16> ptr;

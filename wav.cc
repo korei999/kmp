@@ -4,13 +4,13 @@
 #include <vector>
 
 pointer<s16>
-wav_load(const std::string_view path, size_t align)
+WavLoad(const std::string_view path, size_t align)
 {
     return file_load<s16>(path, align);
 }
 
 WavFile::WavFile(const std::string_view path, size_t allign)
-    : ptr { wav_load(path, allign) } {}
+    : ptr { WavLoad(path, allign) } {}
 
 WavFile::~WavFile()
 {
