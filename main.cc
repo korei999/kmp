@@ -23,7 +23,7 @@ namespace g {
 
     f64 volume = 1.002f;
     f64 minVolume = 1.000f;
-    f64 maxVolume = 1.1301f;
+    f64 maxVolume = 1.201f;
 
     bool exit = false;
 
