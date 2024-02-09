@@ -12,20 +12,23 @@ namespace g {
     extern f64 minVolume;
     extern f64 maxVolume;
 
-    extern bool exit;
-
     extern unsigned step;
-
-    extern bool next;
-    extern bool prev;
-
-    extern bool left;
-    extern bool right;
-
-    extern bool repeatOnEnd;
-
-    extern int songInQ;
-    extern int songsTotal;
-
-    extern bool paused;
 }
+
+struct state {
+    bool paused = false;
+    bool exit = false;
+
+    bool repeatOnEnd = false;
+
+    bool next = false;
+    bool prev = false;
+
+    bool left = false;
+    bool right = false;
+
+    int songInQ = 1;
+    int songsTotal = 1;
+};
+
+extern state State;

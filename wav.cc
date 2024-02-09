@@ -29,8 +29,8 @@ WavFile::play(snd_pcm_t* pcm)
     chunk.reserve(g::periodTime);
 
     for (long offset = 0; offset < file_size; offset += g::periodTime) {
-        if (g::next || g::exit) {
-            g::next = g::exit = false;
+        if (State.next || State.exit) {
+            State.next = State.exit = false;
             return;
         }
         memcpy(chunk.data(), samples + offset, sizeof(s16) * g::periodTime);

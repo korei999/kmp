@@ -25,23 +25,24 @@ namespace g {
     f64 minVolume = 1.000f;
     f64 maxVolume = 1.201f;
 
-    bool exit = false;
-
     unsigned step = 200;
-
-    bool next = false;
-    bool prev = false;
-
-    bool left = false;
-    bool right = false;
-
-    bool repeatOnEnd = false;
-
-    int songInQ = 1;
-    int songsTotal = 1;
-
-    bool paused = false;
 }
+
+state State {
+    .paused = false,
+    .exit = false,
+
+    .repeatOnEnd = false,
+
+    .next = false,
+    .prev = false,
+
+    .left = false,
+    .right = false,
+
+    .songInQ = 1,
+    .songsTotal = 1
+};
 
 std::mutex playMutex;
 std::condition_variable playCV;
@@ -53,7 +54,7 @@ PrintMinSec(size_t timeInSec)
     size_t minutes = minF;
     f32 frac = 60 * (minF - minutes);
 
-    if (g::paused)
+    if (State.paused)
         Printf("\r(paused) {}:{:02.0f} min", minutes, frac);
     else
         Printf("\r{}:{:02.0f} min         ", minutes, frac);
@@ -79,19 +80,19 @@ ReadInput(void)
     while (read(STDIN_FILENO, &c, 1) == 1) {
         switch (c) {
             case 'q':
-                g::exit = true;
+                State.exit = true;
 
-                if (g::paused)
+                if (State.paused)
                     playCV.notify_one();
 
                 exit(1);
 
             case 'n':
-                g::next = true;
+                State.next = true;
                 break;
 
             case 'p':
-                g::prev = true;
+                State.prev = true;
                 break;
 
             case '0':
@@ -114,17 +115,17 @@ ReadInput(void)
 
             case 'l':
             case 'L':
-                g::right = true;
+                State.right = true;
                 break;
 
             case 'h':
             case 'H':
-                g::left = true;
+                State.left = true;
                 break;
 
             case 'c':
             case ' ':
-                g::paused = !g::paused;
+                State.paused = !State.paused;
                 lockChanged = true;
                 break;
 
@@ -142,7 +143,7 @@ ReadInput(void)
             Printf("\r                              volume: {}", frac);
         }
 
-        if (lockChanged && !g::paused) {
+        if (lockChanged && !State.paused) {
             lockChanged = false;
             playCV.notify_one();
         }
@@ -179,8 +180,8 @@ OpusPlay(const std::string_view s)
         long counter = 0;
         f64 rampVol = 0;
         while ((err = op_read_stereo(parser, chunk, p.periodTime) > 0)) {
-            if (g::exit) {
-                g::exit = false;
+            if (State.exit) {
+                State.exit = false;
                 break;
             }
 
@@ -191,7 +192,7 @@ OpusPlay(const std::string_view s)
             
             u64 now = op_pcm_tell(parser);
 
-            if (g::paused) {
+            if (State.paused) {
                 PrintMinSec(now / p.sampleRate);
 
                 p.Pause();
@@ -202,35 +203,35 @@ OpusPlay(const std::string_view s)
                 p.Resume();
             }
 
-            if (g::right) {
+            if (State.right) {
                 op_pcm_seek(parser, now + p.periodTime * g::step);
-                g::right = false;
+                State.right = false;
                 continue;
             }
 
-            if (g::left) {
+            if (State.left) {
                 op_pcm_seek(parser, now - p.periodTime * g::step);
-                g::left = false;
+                State.left = false;
                 continue;
             }
 
-            if (g::next || g::repeatOnEnd) {
-                if (g::songInQ == g::songsTotal) {
-                    g::songInQ = 0;
+            if (State.next || State.repeatOnEnd) {
+                if (State.songInQ == State.songsTotal) {
+                    State.songInQ = 0;
                 }
 
-                if (g::next) {
-                    g::next = false;
+                if (State.next) {
+                    State.next = false;
                     break;
                 }
             }
 
-            if (g::prev) {
-                g::prev = false;
-                g::songInQ -= 2;
+            if (State.prev) {
+                State.prev = false;
+                State.songInQ -= 2;
 
-                if (g::songInQ < 0)
-                    g::songInQ = g::songsTotal - 1;
+                if (State.songInQ < 0)
+                    State.songInQ = State.songsTotal - 1;
 
                 break;
             }
@@ -283,23 +284,23 @@ main(int argc, char* argv[])
 
     std::jthread input(ReadInput);
 
-    g::songsTotal = argc - 1;
-    Printf("songs queued: {}\n", g::songsTotal);
-    for (g::songInQ = 1; g::songInQ < argc; g::songInQ++) {
-        if (argv[g::songInQ]) {
-            std::string_view songName = argv[g::songInQ];
+    State.songsTotal = argc - 1;
+    Printf("songs queued: {}\n", State.songsTotal);
+    for (State.songInQ = 1; State.songInQ < argc; State.songInQ++) {
+        if (argv[State.songInQ]) {
+            std::string_view songName = argv[State.songInQ];
 
-            if (songName.ends_with(".opus")) {
-                Printf("\n{}: playing: {}\n", g::songInQ, argv[g::songInQ]);
+            if (songName.ends_with(".opus") || songName.ends_with(".ogg")) {
+                Printf("\n{}: playing: {}\n", State.songInQ, argv[State.songInQ]);
                 OpusPlay(songName);
             } else if (songName.ends_with(".wav")) {
-                Printf("\n{}: playing: {}\n", g::songInQ, argv[g::songInQ]);
+                Printf("\n{}: playing: {}\n", State.songInQ, argv[State.songInQ]);
                 WavPlay(songName);
             } else {
-                Printf("\nskipping: {}\n", argv[g::songInQ]);
+                Printf("\nskipping: {}\n", argv[State.songInQ]);
             }
         }
     }
 
-    exit(1);
+    exit(0);
 }
