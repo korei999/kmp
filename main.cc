@@ -59,10 +59,12 @@ PrintMinSec(size_t timeInSec)
     size_t minutes = minF;
     int frac = 60 * (minF - minutes);
 
+    move(0, 0);
+    // clrtoeol();
     if (State.paused)
-        mvprintw(0, 0, "(paused) %lu:%02d min", minutes, frac);
+        printw("(paused) %lu:%02d min", minutes, frac);
     else
-        mvprintw(0, 0, "%lu:%02d min", minutes, frac);
+        printw("%lu:%02d min         ", minutes, frac);
 
     refresh();
 }
@@ -77,7 +79,9 @@ PrintVolume()
 
     char volfmt[] {"volume: %03ld"};
 
-    mvprintw(0, (stdscr->_maxx - Length(volfmt)), volfmt, frac >> 1);
+    move(1, 0);
+    clrtoeol();
+    printw(volfmt, frac >> 1);
     refresh();
 }
 
