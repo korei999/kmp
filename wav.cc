@@ -36,7 +36,7 @@ WavFile::play(snd_pcm_t* pcm)
         memcpy(chunk.data(), samples + offset, sizeof(s16) * g::periodTime);
 
         for (size_t i = 0; i < g::periodTime; i++) {
-            chunk[i] *= g::volume;
+            chunk[i] *= State.volume;
         }
         
         snd_pcm_writei(pcm, chunk.data(), g::periodTime / this->channels);

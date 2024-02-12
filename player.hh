@@ -2,7 +2,6 @@
 #include "util.hh"
 #include "main.hh"
 
-#include <vector>
 #include <alsa/asoundlib.h>
 
 namespace player {
@@ -28,7 +27,7 @@ namespace player {
                    unsigned _periodTime,
                    unsigned _sampleRate = g::sampleRate,
                    unsigned _bufferTime = g::bufferTime,
-              enum _snd_pcm_format _format = SND_PCM_FORMAT_S16_LE,
+                   enum _snd_pcm_format _format = SND_PCM_FORMAT_S16_LE,
                    snd_pcm_access_t _access = SND_PCM_ACCESS_RW_INTERLEAVED,
                    int resample = 0)
             : channels { _channels }, periodTime { _periodTime }, sampleRate { _sampleRate }, bufferTime { _bufferTime }, format { _format }
@@ -36,7 +35,7 @@ namespace player {
             int err;
 
             if ((err = snd_pcm_open(&handle, device.data(), SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
-                printf("Playback open error: %s\n", snd_strerror(err));
+                Die("Playback open error: %s\n", snd_strerror(err));
                 exit(EXIT_FAILURE);
             }
 
@@ -45,13 +44,13 @@ namespace player {
 
             err = set_hwparams(_access, resample);
             if (err < 0) {
-                printf("Setting of hwParams failed: %s\n", snd_strerror(err));
+                Die("Setting of hwParams failed: %s\n", snd_strerror(err));
                 exit(EXIT_FAILURE);
             }
 
             err = set_swparams();
             if (err < 0) {
-                printf("Setting of swParams failed: %s\n", snd_strerror(err));
+                Die("Setting of swParams failed: %s\n", snd_strerror(err));
                 exit(EXIT_FAILURE);
             }
         }
@@ -64,7 +63,7 @@ namespace player {
             /* set the count of channels */
             err = snd_pcm_hw_params_set_channels(handle, hwParams, channels);
             if (err < 0) {
-                printf("Channels count (%u) not available for playbacks: %s\n", channels, snd_strerror(err));
+                Die("Channels count (%u) not available for playbacks: %s\n", channels, snd_strerror(err));
                 return err;
             }
 
@@ -81,53 +80,53 @@ namespace player {
             /* choose all parameters */
             err = snd_pcm_hw_params_any(handle, hwParams);
             if (err < 0) {
-                printf("Broken configuration for playback: no configurations available: %s\n", snd_strerror(err));
+                Die("Broken configuration for playback: no configurations available: %s\n", snd_strerror(err));
                 return err;
             }
             /* set hardware resampling */
             err = snd_pcm_hw_params_set_rate_resample(handle, hwParams, resample);
             if (err < 0) {
-                printf("Resampling setup failed for playback: %s\n", snd_strerror(err));
+                Die("Resampling setup failed for playback: %s\n", snd_strerror(err));
                 return err;
             }
             /* set the interleaved read/write format */
             err = snd_pcm_hw_params_set_access(handle, hwParams, access);
             if (err < 0) {
-                printf("Access type not available for playback: %s\n", snd_strerror(err));
+                Die("Access type not available for playback: %s\n", snd_strerror(err));
                 return err;
             }
             /* set the sample format */
             err = snd_pcm_hw_params_set_format(handle, hwParams, format);
             if (err < 0) {
-                printf("Sample format not available for playback: %s\n", snd_strerror(err));
+                Die("Sample format not available for playback: %s\n", snd_strerror(err));
                 return err;
             }
             /* set the count of channels */
             err = snd_pcm_hw_params_set_channels(handle, hwParams, channels);
             if (err < 0) {
-                printf("Channels count (%u) not available for playbacks: %s\n", channels, snd_strerror(err));
+                Die("Channels count (%u) not available for playbacks: %s\n", channels, snd_strerror(err));
                 return err;
             }
             /* set the stream rate */
             rrate = sampleRate;
             err = snd_pcm_hw_params_set_rate_near(handle, hwParams, &rrate, 0);
             if (err < 0) {
-                printf("Rate %uHz not available for playback: %s\n", sampleRate, snd_strerror(err));
+                Die("Rate %uHz not available for playback: %s\n", sampleRate, snd_strerror(err));
                 return err;
             }
             if (rrate != g::sampleRate) {
-                printf("Rate doesn't match (requested %uHz, get %iHz)\n", sampleRate, err);
+                Die("Rate doesn't match (requested %uHz, get %iHz)\n", sampleRate, err);
                 return -EINVAL;
             }
             /* set the buffer time */
             err = snd_pcm_hw_params_set_buffer_time_near(handle, hwParams, &bufferTime, &dir);
             if (err < 0) {
-                printf("Unable to set buffer time %u for playback: %s\n", bufferTime, snd_strerror(err));
+                Die("Unable to set buffer time %u for playback: %s\n", bufferTime, snd_strerror(err));
                 return err;
             }
             err = snd_pcm_hw_params_get_buffer_size(hwParams, &size);
             if (err < 0) {
-                printf("Unable to get buffer size for playback: %s\n", snd_strerror(err));
+                Die("Unable to get buffer size for playback: %s\n", snd_strerror(err));
                 return err;
             }
             bufferSize = size;
@@ -143,19 +142,19 @@ namespace player {
             /* set the period time */
             err = snd_pcm_hw_params_set_period_time_near(handle, hwParams, &periodTime, &dir);
             if (err < 0) {
-                printf("Unable to set period time %u for playback: %s\n", periodTime, snd_strerror(err));
+                Die("Unable to set period time %u for playback: %s\n", periodTime, snd_strerror(err));
                 return err;
             }
             err = snd_pcm_hw_params_get_period_size(hwParams, &size, &dir);
             if (err < 0) {
-                printf("Unable to get period size for playback: %s\n", snd_strerror(err));
+                Die("Unable to get period size for playback: %s\n", snd_strerror(err));
                 return err;
             }
             periodSize = size;
             /* write the parameters to device */
             err = snd_pcm_hw_params(handle, hwParams);
             if (err < 0) {
-                printf("Unable to set hw hwParams for playback: %s\n", snd_strerror(err));
+                Die("Unable to set hw hwParams for playback: %s\n", snd_strerror(err));
                 return err;
             }
             return 0;
@@ -169,35 +168,35 @@ namespace player {
             /* get the current swparams */
             err = snd_pcm_sw_params_current(handle, swParams);
             if (err < 0) {
-                printf("Unable to determine current swparams for playback: %s\n", snd_strerror(err));
+                Die("Unable to determine current swparams for playback: %s\n", snd_strerror(err));
                 return err;
             }
             /* start the transfer when the buffer is almost full: */
             /* (buffer_size / avail_min) * avail_min */
             err = snd_pcm_sw_params_set_start_threshold(handle, swParams, (bufferSize / periodSize) * periodSize);
             if (err < 0) {
-                printf("Unable to set start threshold mode for playback: %s\n", snd_strerror(err));
+                Die("Unable to set start threshold mode for playback: %s\n", snd_strerror(err));
                 return err;
             }
             /* allow the transfer when at least period_size samples can be processed */
             /* or disable this mechanism when period event is enabled (aka interrupt like style processing) */
             err = snd_pcm_sw_params_set_avail_min(handle, swParams, periodEvent ? bufferSize : periodSize);
             if (err < 0) {
-                printf("Unable to set avail min for playback: %s\n", snd_strerror(err));
+                Die("Unable to set avail min for playback: %s\n", snd_strerror(err));
                 return err;
             }
             /* enable period events when requested */
             if (periodEvent) {
                 err = snd_pcm_sw_params_set_period_event(handle, swParams, 1);
                 if (err < 0) {
-                    printf("Unable to set period event: %s\n", snd_strerror(err));
+                    Die("Unable to set period event: %s\n", snd_strerror(err));
                     return err;
                 }
             }
             /* write the parameters to the playback device */
             err = snd_pcm_sw_params(handle, swParams);
             if (err < 0) {
-                printf("Unable to set sw params for playback: %s\n", snd_strerror(err));
+                Die("Unable to set sw params for playback: %s\n", snd_strerror(err));
                 return err;
             }
             return 0;
@@ -211,7 +210,7 @@ namespace player {
             if (frames < 0)
                 frames = snd_pcm_recover(handle, frames, 0);
             if (frames < 0) {
-                printf("snd_pcm_writei failed: %s\n", snd_strerror(frames));
+                Die("snd_pcm_writei failed: %s\n", snd_strerror(frames));
                 return -1;
             }
 
@@ -233,12 +232,16 @@ namespace player {
         void
         Print()
         {
-            Printf("channels: {}\n", channels);
-            Printf("sampleRate: {}\n", sampleRate);
-            Printf("bufferTime: {}\n", bufferTime);
-            Printf("periodTime: {}\n", periodTime);
-            Printf("bufferSize: {}\n", bufferSize);
-            Printf("periodSize: {}\n", periodSize);
+#ifndef NDEBUG
+            std::lock_guard lock(printMtx);
+            mvprintw(0, 0, "channels: %u\n", channels);
+            mvprintw(1, 0, "sampleRate: %u\n", sampleRate);
+            mvprintw(2, 0, "bufferTime: %u\n", bufferTime);
+            mvprintw(3, 0, "periodTime: %u\n", periodTime);
+            mvprintw(4, 0, "bufferSize: %lu\n", bufferSize);
+            mvprintw(5, 0, "periodSize: %lu\n", periodSize);
+            refresh();
+#endif
         }
     
         ~Alsa()

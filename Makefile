@@ -2,15 +2,18 @@ MAKEFLAGS := --jobs=$(shell nproc) --output-sync=target
 
 include dbg.mk
 
-CC := g++ -fdiagnostics-color=always
+CC := clang++ -fdiagnostics-color=always -stdlib=libc++
 WARNING := -Wall -Wextra -Wpedantic
 DEBUG := -g
 
 OPUS := $(shell pkg-config --cflags opusfile opus)
 OPUS_LIB := $(shell pkg-config --libs opus opusfile)
 
-CFLAGS := -std=c++20 -pipe $(OPUS)
-LDFLAGS := -lasound -lm $(OPUS_LIB)
+NCURSES := $(shell pkg-config --cflags ncursesw)
+NCURSES_LIB := $(shell pkg-config --libs ncursesw)
+
+CFLAGS := -std=c++2b -pipe $(OPUS) $(NCURSES)
+LDFLAGS := -lasound -lm $(OPUS_LIB) $(NCURSES_LIB)
 
 SRCD := .
 BD := ./build
@@ -23,11 +26,13 @@ OBJ := $(SRCS:%=$(BD)/%.o)
 # release build
 all: CC += -flto=auto $(SAFE_STACK) 
 all: CFLAGS += -O2 -march=sandybridge $(WARNING) -DNDEBUG
+all: LDFLAGS += -fuse-ld=lld
 all: $(EXEC)
 
 # debug build
-debug: CC += $(ASAN)
+debug: CC += #$(ASAN)
 debug: CFLAGS += -O0 $(DEBUG) $(WARNING) $(WNO)
+debug: LDFLAGS += -fuse-ld=mold
 debug: $(EXEC)
 
 # arcane rules to build everything

@@ -1,17 +1,18 @@
-#include "util.hh"
-#include "wav.hh"
 #include "main.hh"
 #include "player.hh"
+#include "util.hh"
+#include "wav.hh"
 
-#include <termios.h>
 #include <alsa/asoundlib.h>
-#include <cmath>
-#include <string>
-#include <vector>
-#include <thread>
+#include <locale.h>
+#include <ncurses.h>
 #include <opus/opusfile.h>
-#include <mutex>
+#include <printf.h>
+
 #include <condition_variable>
+#include <mutex>
+#include <thread>
+#include <print>
 
 /* gloabls */
 namespace g {
@@ -21,14 +22,14 @@ namespace g {
     unsigned bufferTime = 100'000;       /* ring buffer length in us */ /* 500'000 us == 0.5 s */
     unsigned periodTime = 20'000;       /* period time in us */
 
-    f64 volume = 1.002f;
-    f64 minVolume = 1.000f;
-    f64 maxVolume = 1.201f;
-
     unsigned step = 200;
 }
 
 state State {
+    .volume = 1.002f,
+    .minVolume = 1.000f,
+    .maxVolume = 1.201f,
+
     .paused = false,
     .exit = false,
 
@@ -40,44 +41,75 @@ state State {
     .left = false,
     .right = false,
 
-    .songInQ = 1,
-    .songsTotal = 1
+    .songInQ = 0,
 };
 
+WINDOW* listWindow;
+
+std::mutex printMtx;
 std::mutex playMutex;
 std::condition_variable playCV;
 
 void
 PrintMinSec(size_t timeInSec)
 {
+    std::lock_guard lock(printMtx);
+
     f32 minF = timeInSec / 60.f;
     size_t minutes = minF;
-    f32 frac = 60 * (minF - minutes);
+    int frac = 60 * (minF - minutes);
 
     if (State.paused)
-        Printf("\r(paused) {}:{:02.0f} min", minutes, frac);
+        mvprintw(0, 0, "(paused) %lu:%02d min", minutes, frac);
     else
-        Printf("\r{}:{:02.0f} min         ", minutes, frac);
+        mvprintw(0, 0, "%lu:%02d min", minutes, frac);
 
-    fflush(stdout);
+    refresh();
 }
 
 void
-TermRawMode(void)
+PrintVolume()
 {
-	termios raw;
-	tcgetattr(STDIN_FILENO, &raw);
-	raw.c_lflag &= ~(ECHO | ICANON);
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+    std::lock_guard lock(printMtx);
+
+    long d = State.volume;
+    long frac = 1000 * (State.volume - d);
+
+    char volfmt[] {"volume: %03ld"};
+
+    mvprintw(0, (stdscr->_maxx - Length(volfmt)), volfmt, frac >> 1);
+    refresh();
 }
+
+void
+PrintSongName()
+{
+    std::lock_guard pl(printMtx);
+
+    clear();
+    mvprintw(stdscr->_maxy - 1, 0, "%lu: playing:", State.songInQ);
+    mvprintw(stdscr->_maxy, 0, "%s", State.songList[State.songInQ].data()); 
+    refresh();
+}
+
+#ifndef NDEBUG
+void
+PrintCharPressed(char c)
+{
+    std::lock_guard pl(printMtx);
+
+    char fmt[] {"pressed: %c(%d)"};
+    mvprintw(stdscr->_maxy, (stdscr->_maxx - Length(fmt)), fmt, c, c);
+}
+#endif
 
 void
 ReadInput(void)
 {
-    int c;
+    char c;
     bool volume_changed = false;
     bool lockChanged = false;
-    while (read(STDIN_FILENO, &c, 1) == 1) {
+    while ( (c = getch()) ) {
         switch (c) {
             case 'q':
                 State.exit = true;
@@ -85,7 +117,7 @@ ReadInput(void)
                 if (State.paused)
                     playCV.notify_one();
 
-                exit(1);
+                return;
 
             case 'n':
                 State.next = true;
@@ -96,20 +128,20 @@ ReadInput(void)
                 break;
 
             case '0':
-                g::volume += 0.005;
+                State.volume += 0.005;
                 volume_changed = true;
                 break;
             case ')':
-                g::volume += 0.001;
+                State.volume += 0.001;
                 volume_changed = true;
                 break;
 
             case '9':
-                g::volume -= 0.005;
+                State.volume -= 0.005;
                 volume_changed = true;
                 break;
             case '(':
-                g::volume -= 0.001;
+                State.volume -= 0.001;
                 volume_changed = true;
                 break;
 
@@ -129,26 +161,29 @@ ReadInput(void)
                 lockChanged = true;
                 break;
 
+            case 12:
+                PrintSongName();
+                PrintVolume();
+                break;
+
             default:
+#ifndef NDEBUG
+                PrintCharPressed(c);
+#endif
                 break;
         }
 
-        g::volume = Clamp(g::volume, g::minVolume, g::maxVolume);
+        State.volume = Clamp(State.volume, State.minVolume, State.maxVolume);
 
         if (volume_changed) {
             volume_changed = false;
-            Printf("\r                                             ");
-            long d = g::volume;
-            long frac = 1000 * (g::volume - d);
-            Printf("\r                              volume: {}", frac);
+            PrintVolume();
         }
 
         if (lockChanged && !State.paused) {
             lockChanged = false;
             playCV.notify_one();
         }
-
-        fflush(stdout);
     }
 }
 
@@ -166,12 +201,13 @@ OpusPlay(const std::string_view s)
     /* opus can do 1920 max haven't figured why tho */
     u32 ChunkSize = 1920;
 
+    PrintSongName();
     PrintMinSec(lengthInS);
-    putchar('\n');
+    PrintVolume();
 
     /* some songs give !2 channels, and speedup playback */
     player::Alsa p("default", channels, ChunkSize);
-    p.Print();
+    // p.Print();
 
     s16* chunk = new s16[ChunkSize];
 
@@ -181,13 +217,13 @@ OpusPlay(const std::string_view s)
         f64 rampVol = 0;
         while ((err = op_read_stereo(parser, chunk, p.periodTime) > 0)) {
             if (State.exit) {
-                State.exit = false;
                 break;
             }
 
             if (!err) {
                 // ...
-                Printf("some error...\n");
+                std::lock_guard pl(printMtx);
+                mvprintw(0, stdscr->_maxx >> 1, "some error...\n");
             }
             
             u64 now = op_pcm_tell(parser);
@@ -216,22 +252,20 @@ OpusPlay(const std::string_view s)
             }
 
             if (State.next || State.repeatOnEnd) {
-                if (State.songInQ == State.songsTotal) {
-                    State.songInQ = 0;
-                }
+                if (State.next)
+                    State.songInQ++;
 
-                if (State.next) {
-                    State.next = false;
-                    break;
-                }
+                if (State.songInQ == (long)State.songList.size())
+                    State.songInQ = 0;
+
+                break;
             }
 
             if (State.prev) {
-                State.prev = false;
-                State.songInQ -= 2;
+                State.songInQ--;
 
                 if (State.songInQ < 0)
-                    State.songInQ = State.songsTotal - 1;
+                    State.songInQ = State.songList.size() - 1;
 
                 break;
             }
@@ -242,7 +276,7 @@ OpusPlay(const std::string_view s)
             }
 
             /* modify chunk */
-            f64 vol = LinearToDB(g::volume);
+            f64 vol = LinearToDB(State.volume);
             
             /* minimize crack at the very beggining of playback */
             if (rampVol <= 1.0) {
@@ -256,7 +290,8 @@ OpusPlay(const std::string_view s)
             }
 
             if (p.Play(chunk, ChunkSize) == -1) {
-                Printf("playback error\n");
+                std::lock_guard pl(printMtx);
+                mvprintw(0, stdscr->_maxx >> 1, "playback error\n");
                 break;
             }
         }
@@ -280,27 +315,42 @@ WavPlay(const std::string_view s)
 int
 main(int argc, char* argv[])
 {
-    TermRawMode();
+    setlocale(LC_ALL, "");
 
-    std::jthread input(ReadInput);
+    initscr();
+    // start_color();
+    curs_set(0);
+    noecho();
+    refresh();
 
-    State.songsTotal = argc - 1;
-    Printf("songs queued: {}\n", State.songsTotal);
-    for (State.songInQ = 1; State.songInQ < argc; State.songInQ++) {
-        if (argv[State.songInQ]) {
-            std::string_view songName = argv[State.songInQ];
+    std::thread input(ReadInput);
+    input.detach();
 
-            if (songName.ends_with(".opus") || songName.ends_with(".ogg")) {
-                Printf("\n{}: playing: {}\n", State.songInQ, argv[State.songInQ]);
-                OpusPlay(songName);
-            } else if (songName.ends_with(".wav")) {
-                Printf("\n{}: playing: {}\n", State.songInQ, argv[State.songInQ]);
-                WavPlay(songName);
-            } else {
-                Printf("\nskipping: {}\n", argv[State.songInQ]);
-            }
+    for (int i = 1; i < argc; i++) {
+        std::string_view songName = argv[i];
+        if (songName.ends_with(".opus")) {
+            State.songList.push_back(songName);
         }
     }
 
-    exit(0);
+    while (State.songInQ < (long)State.songList.size()) {
+        if (State.exit)
+            break;
+
+        OpusPlay(State.songList[State.songInQ]);
+        if (State.prev) {
+            State.prev = false;
+            continue;
+        }
+
+        if (State.next) {
+            State.next = false;
+            continue;
+        }
+
+        State.songInQ++;
+    }
+
+    endwin();
+    return 0;
 }

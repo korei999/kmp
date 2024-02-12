@@ -1,12 +1,20 @@
 #pragma once
 #include "ultratypes.h"
 
-#include <iostream>
-#include <format>
-#include <cmath>
+#include <ncurses.h>
 
-#define Printf std::cout<<std::format
-#define Printe std::cerr<<std::format
+#include <string_view>
+
+#define Printf std::cout << std::format
+#define Printe std::cerr << std::format
+
+#define Die(...)                                            \
+    do {                                                    \
+        /* severity: ERROR/WARNING */                       \
+        (void)printf("DIED: %s(%u): ", __FILE__, __LINE__); \
+        (void)printf(__VA_ARGS__);                          \
+        endwin();                                           \
+    } while (0)
 
 #define Length(a) (sizeof(a) / sizeof(a[0]))
 
