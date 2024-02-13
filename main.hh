@@ -43,10 +43,19 @@ struct state {
     bool pressedEnter = false;
 
     std::vector<std::string_view> songList {};
+    long scrolloff = 3;
+
+    /* first index of song to draw in the list */
+    long firstToDraw = 0;
     long inQ = 0;
     long inQSelected = 0;
-    long selected = 0;
+
+    bool goDown = 0;
+    bool goUp = 0;
 };
+
+extern WINDOW* songListWin;
+extern WINDOW* songListSubWin;
 
 extern state State;
 extern std::mutex printMtx;

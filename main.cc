@@ -37,23 +37,6 @@ state State {
     .volume = 1.010f,
     .minVolume = 1.000f,
     .maxVolume = 1.261f,
-
-    .paused = false,
-    .exit = false,
-
-    .repeatOnEnd = false,
-
-    .next = false,
-    .prev = false,
-
-    .left = false,
-    .right = false,
-
-    .pressedEnter = false,
-
-    .inQ = 0,
-    .inQSelected = 0,
-    .selected = 0
 };
 
 WINDOW* songListWin;
@@ -105,24 +88,16 @@ PrintVolume()
     refresh();
 }
 
-void
-PrintSongList()
+inline
+static void
+PrintSongListInRange(long first, long last)
 {
-    std::lock_guard lock(printMtx);
-
-    int maxNumLen = std::to_string(State.songList.size()).size();
-    std::string_view selfmt {"inQSelected: %*ld | selected: %*ld | inQ: %*ld | maxlines: %*ld | first: %*ld | second: %*ld]"};
-
     long maxlines = songListSubWin->_maxy + 1;
 
-    long max = State.songList.size();
-    long first = 0 + State.selected;
-    long second = std::min(maxlines + State.selected, max);
+    for (long i = 0; i < last; i++) {
+        long sel = i + first;
 
-    for (long i = 0; i < maxlines; i++) {
-        long sel = i + State.selected;
-
-        if (i + State.selected < (long)State.songList.size()) {
+        if (sel < (long)State.songList.size()) {
             std::string delpath {State.songList[sel]};
             delpath = delpath.substr(delpath.find_last_of("/") + 1, delpath.size());
 
@@ -131,30 +106,11 @@ PrintSongList()
 
             if (sel == State.inQ)
                 wattron(songListSubWin, COLOR_PAIR(Clr::redBlack));
-
             if (sel == State.inQSelected)
                 wattron(songListSubWin, A_REVERSE);
 
             mvwprintw(songListSubWin, i, 1, "%.*s",  songListSubWin->_maxx - 2, delpath.data());
-
             wattroff(songListSubWin, A_REVERSE | COLOR_PAIR(Clr::redBlack));
-
-            mvwprintw(songListSubWin,
-                      0,
-                      songListSubWin->_maxx - selfmt.size(),
-                      selfmt.data(),
-                      maxNumLen,
-                      State.inQSelected,
-                      maxNumLen,
-                      State.selected,
-                      maxNumLen,
-                      State.inQ,
-                      maxNumLen,
-                      songListSubWin->_maxy - 1,
-                      maxNumLen,
-                      first,
-                      maxNumLen,
-                      second);
         } else {
             wmove(songListSubWin, i, 0);
             wclrtoeol(songListSubWin);
@@ -162,6 +118,59 @@ PrintSongList()
     }
 
     wrefresh(songListSubWin);
+}
+
+void
+PrintSongList()
+{
+    std::lock_guard lock(printMtx);
+
+    int maxNumLen = std::to_string(State.songList.size()).size();
+    std::string_view selfmt {"inQSelected: %*ld | inQ: %*ld | maxlines: %*ld | first: %*ld | second: %*ld]"};
+
+    long last = State.firstToDraw + songListSubWin->_maxy + 1;
+
+    /* pressing j */
+    if (State.goDown && State.inQSelected >= (last - State.scrolloff)) {
+        State.goDown = false;
+
+        if (State.inQSelected < ((long)State.songList.size() - State.scrolloff))
+            State.firstToDraw++;
+    }
+
+    /* pressing k */
+    if (State.goUp && State.inQSelected < (State.firstToDraw + State.scrolloff)) {
+        State.goUp = false;
+
+        if (State.inQSelected >= State.scrolloff)
+            State.firstToDraw--;
+    }
+
+    PrintSongListInRange(State.firstToDraw, last);
+
+// #ifdef DEBUG
+    // long max = State.songList.size();
+    // long first = 0 + State.firstToDraw;
+    // // long second = State.lastToDraw;
+    // long second = last;
+
+    // mvwprintw(songListSubWin,
+            // 0,
+            // songListSubWin->_maxx - selfmt.size(),
+            // selfmt.data(),
+            // maxNumLen,
+            // State.inQSelected,
+            // maxNumLen,
+            // State.inQ,
+            // maxNumLen,
+            // songListSubWin->_maxy,
+            // maxNumLen,
+            // State.firstToDraw,
+            // maxNumLen,
+            // State.lastToDraw);
+
+    // wrefresh(songListSubWin);
+// #endif
 }
 
 void
@@ -188,7 +197,7 @@ RefreshWindows()
 {
     std::lock_guard pl(printMtx);
 
-    mvprintw(stdscr->_maxy, 0, "maxy: %d\tmaxx: %d", stdscr->_maxy, stdscr->_maxx);
+    // mvprintw(stdscr->_maxy, 0, "maxy: %d\tmaxx: %d", stdscr->_maxy, stdscr->_maxx);
     wresize(songListWin, stdscr->_maxy - 6, stdscr->_maxx);
     wresize(songListSubWin, songListWin->_maxy - 1, songListWin->_maxx - 1);
 
@@ -371,7 +380,6 @@ main(int argc, char* argv[])
                             songListWin->_maxx - 1,
                             songListWin->_begy + 1,
                             songListWin->_begx + 1);
-
 
     wrefresh(songListWin);
 

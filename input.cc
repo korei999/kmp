@@ -59,29 +59,35 @@ ReadInput()
                 lockChanged = true;
                 break;
 
-            case 'n':
-                State.inQSelected++;
-                if (State.inQSelected > (long)State.songList.size() - 1)
-                    State.inQSelected = 0;
-                PrintSongList();
-                break;
-            case 'p':
-                State.inQSelected--;
-                if (State.inQSelected < 0)
-                    State.inQSelected = (long)(State.songList.size() - 1);
-                PrintSongList();
-                break;
-
             case 'j':
-                State.selected++;
-                if (State.selected > (long)State.songList.size() - 1)
-                    State.selected = 0;
+                State.goDown = true;
+                State.inQSelected++;
+
+                if (State.inQSelected > (long)State.songList.size() - 1)
+                    State.inQSelected = (long)State.songList.size() - 1;
+
                 PrintSongList();
                 break;
             case 'k':
-                State.selected--;
-                if (State.selected < 0)
-                    State.selected = (long)(State.songList.size() - 1);
+                State.goUp = true;
+                State.inQSelected--;
+
+                if (State.inQSelected < 0)
+                    State.inQSelected = 0;
+
+                PrintSongList();
+                break;
+
+            case 'g':
+                State.inQSelected = 0;
+                State.firstToDraw = 0;
+
+                PrintSongList();
+                break;
+            case 'G':
+                State.inQSelected = State.songList.size() - 1;
+                State.firstToDraw = (State.songList.size() - 1) - songListSubWin->_maxy;
+
                 PrintSongList();
                 break;
 
@@ -90,7 +96,7 @@ ReadInput()
                 State.inQ = State.inQSelected;
                 break;
 
-            case 12:
+            case 12: /* C-l */
                 PrintSongName();
                 PrintVolume();
                 RefreshWindows();
