@@ -1,11 +1,18 @@
 #pragma once
 #include "ultratypes.h"
 
-#include <mutex>
 #include <ncurses.h>
 
-#include <vector>
+#include <condition_variable>
+#include <mutex>
 #include <string_view>
+#include <vector>
+
+void PrintVolume();
+void PrintCharPressed(char c);
+void PrintSongList();
+void RefreshWindows();
+void PrintSongName();
 
 namespace g {
     extern unsigned sampleRate;
@@ -38,8 +45,11 @@ struct state {
     std::vector<std::string_view> songList {};
     long songInQ = 0;
     long selected = 0;
+    long vSelected = 0;
 };
 
 extern state State;
 extern std::mutex printMtx;
+extern std::mutex playMutex;
+extern std::condition_variable playCV;
 
