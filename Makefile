@@ -2,9 +2,8 @@ MAKEFLAGS := --jobs=$(shell nproc) --output-sync=target
 
 include dbg.mk
 
-CC := clang++ -fdiagnostics-color=always -stdlib=libc++
+CC := g++ -fdiagnostics-color=always
 WARNING := -Wall -Wextra -Wpedantic
-DEBUG := -g
 
 OPUS := $(shell pkg-config --cflags opusfile opus)
 OPUS_LIB := $(shell pkg-config --libs opus opusfile)
@@ -26,7 +25,6 @@ OBJ := $(SRCS:%=$(BD)/%.o)
 # release build
 all: CC += -flto=auto $(SAFE_STACK) 
 all: CFLAGS += -O2 -march=sandybridge $(WARNING) -DNDEBUG
-all: LDFLAGS += -fuse-ld=lld
 all: $(EXEC)
 
 # debug build

@@ -56,7 +56,7 @@ namespace player {
         }
 
         int
-        SetChannels(u8 _channels)
+        SetChannels([[maybe_unused]] u8 _channels)
         {
             int err;
 
@@ -232,7 +232,7 @@ namespace player {
         void
         Print()
         {
-#ifndef NDEBUG
+#ifdef DEBUG
             std::lock_guard lock(printMtx);
             mvprintw(0, 0, "channels: %u\n", channels);
             mvprintw(1, 0, "sampleRate: %u\n", sampleRate);

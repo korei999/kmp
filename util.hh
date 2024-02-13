@@ -1,6 +1,7 @@
 #pragma once
 #include "ultratypes.h"
 
+#include <cmath>
 #include <ncurses.h>
 
 #include <string_view>

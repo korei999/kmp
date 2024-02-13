@@ -5,6 +5,7 @@ ASAN :=
 ASAN += -fsanitize=address
 
 DEBUG :=
+DEBUG += -DDEBUG 
 DEBUG += -g
 
 WNO := 

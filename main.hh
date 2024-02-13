@@ -1,6 +1,7 @@
 #pragma once
 #include "ultratypes.h"
 
+#include <mutex>
 #include <ncurses.h>
 
 #include <vector>
@@ -32,8 +33,11 @@ struct state {
     bool left = false;
     bool right = false;
 
+    bool pressedEnter = false;
+
     std::vector<std::string_view> songList {};
     long songInQ = 0;
+    long selected = 0;
 };
 
 extern state State;

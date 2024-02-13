@@ -12,7 +12,13 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
-#include <print>
+#include <format>
+
+enum Clr : int {
+    blackGreen = 1,
+    blackYellow = 2,
+    blackBlue = 3,
+};
 
 /* gloabls */
 namespace g {
@@ -28,7 +34,7 @@ namespace g {
 state State {
     .volume = 1.002f,
     .minVolume = 1.000f,
-    .maxVolume = 1.201f,
+    .maxVolume = 1.261f,
 
     .paused = false,
     .exit = false,
@@ -41,17 +47,21 @@ state State {
     .left = false,
     .right = false,
 
+    .pressedEnter = false,
+
     .songInQ = 0,
+    .selected = 0
 };
 
-WINDOW* listWindow;
+WINDOW* songListWin;
+WINDOW* songListSubWin;
 
 std::mutex printMtx;
 std::mutex playMutex;
 std::condition_variable playCV;
 
 void
-PrintMinSec(size_t timeInSec)
+PrintMinSec(size_t timeInSec, size_t len)
 {
     std::lock_guard lock(printMtx);
 
@@ -59,12 +69,15 @@ PrintMinSec(size_t timeInSec)
     size_t minutes = minF;
     int frac = 60 * (minF - minutes);
 
+    f32 minFmax = len / 60.f;
+    size_t minutesmax = minFmax;
+    int fracmax = 60 * (minFmax - minutesmax);
+
     move(0, 0);
-    // clrtoeol();
     if (State.paused)
-        printw("(paused) %lu:%02d min", minutes, frac);
+        printw("(paused) %lu:%02d / %lu:%02d min", minutes, frac, minutesmax, fracmax);
     else
-        printw("%lu:%02d min         ", minutes, frac);
+        printw("%lu:%02d / %lu:%02d min         ", minutes, frac, minutesmax, fracmax);
 
     refresh();
 }
@@ -77,12 +90,49 @@ PrintVolume()
     long d = State.volume;
     long frac = 1000 * (State.volume - d);
 
-    char volfmt[] {"volume: %03ld"};
+    char volfmt[] {"volume: %ld"};
 
     move(1, 0);
     clrtoeol();
-    printw(volfmt, frac >> 1);
+
+    attron(COLOR_PAIR(Clr::blackGreen));
+    printw(volfmt, frac / 2);
+    attroff(COLOR_PAIR(Clr::blackGreen));
     refresh();
+}
+
+void
+PrintSongList()
+{
+    std::lock_guard lock(printMtx);
+
+    auto maxNumLen = std::to_string(State.songList.size()).size();
+    std::string_view selfmt {"selected: %*u\tinQ: %*lu"};
+
+    auto diff = songListSubWin->_maxy - State.songInQ;
+    for (size_t i = 0; i < State.songList.size() && i < (size_t)songListSubWin->_maxy - 1; i++) {
+        std::string delpath {State.songList[i]};
+        delpath = delpath.substr(delpath.find_last_of("/") + 1, delpath.size());
+
+        size_t off = i + 1;
+
+        wmove(songListSubWin, off, 1);
+        wclrtoeol(songListSubWin);
+
+        if ((long)i == State.selected) {
+            // wattron(songListSubWin, A_REVERSE);
+            wattron(songListSubWin, COLOR_PAIR(Clr::blackBlue));
+        }
+
+        mvwprintw(songListSubWin, 1, songListSubWin->_maxx - selfmt.size() - maxNumLen*2 ,selfmt.data(), maxNumLen, State.selected, maxNumLen, State.songInQ);
+        mvwprintw(songListSubWin, off, songListSubWin->_begx + 1, "%.*s",  songListSubWin->_maxx - 2, delpath.data());
+
+        // wattroff(songListSubWin, A_REVERSE);
+        wattroff(songListSubWin, COLOR_PAIR(Clr::blackBlue));
+    }
+
+
+    wrefresh(songListSubWin);
 }
 
 void
@@ -91,19 +141,36 @@ PrintSongName()
     std::lock_guard pl(printMtx);
 
     clear();
-    mvprintw(stdscr->_maxy - 1, 0, "%lu: playing:", State.songInQ);
-    mvprintw(stdscr->_maxy, 0, "%s", State.songList[State.songInQ].data()); 
+    mvprintw(4, 0, "%lu / %lu playing:", State.songInQ + 1, State.songList.size());
+    attron(COLOR_PAIR(Clr::blackYellow));
+    mvprintw(5, 0, "%s", State.songList[State.songInQ].data()); 
+    attroff(COLOR_PAIR(Clr::blackYellow));
+
     refresh();
 }
 
-#ifndef NDEBUG
 void
+RefreshWindows()
+{
+    std::lock_guard pl(printMtx);
+
+    mvprintw(stdscr->_maxy, 0, "maxy: %d\tmaxx: %d", stdscr->_maxy, stdscr->_maxx);
+    wresize(songListWin, stdscr->_maxy - 6, stdscr->_maxx);
+    wresize(songListSubWin, songListWin->_maxy - 1, songListWin->_maxx - 1);
+
+    wclear(songListWin);
+    box(songListWin, 0, 0);
+    wrefresh(songListWin);
+}
+
+#ifdef DEBUG
+static void
 PrintCharPressed(char c)
 {
     std::lock_guard pl(printMtx);
 
-    char fmt[] {"pressed: %c(%d)"};
-    mvprintw(stdscr->_maxy, (stdscr->_maxx - Length(fmt)), fmt, c, c);
+    std::string_view fmt {"pressed: %c(%d)"};
+    mvprintw(stdscr->_maxy, (stdscr->_maxx - fmt.size()), fmt.data(), c, c);
 }
 #endif
 
@@ -132,7 +199,7 @@ ReadInput(void)
                 break;
 
             case '0':
-                State.volume += 0.005;
+                State.volume += 0.003;
                 volume_changed = true;
                 break;
             case ')':
@@ -141,7 +208,7 @@ ReadInput(void)
                 break;
 
             case '9':
-                State.volume -= 0.005;
+                State.volume -= 0.003;
                 volume_changed = true;
                 break;
             case '(':
@@ -165,13 +232,41 @@ ReadInput(void)
                 lockChanged = true;
                 break;
 
+            case 'j':
+                State.selected++;
+
+                // if (State.selected > std::min((long)State.songList.size(), (long)songListSubWin->_maxy - 2))
+                    // State.selected = 0;
+
+                if (State.selected > (long)State.songList.size())
+                    State.selected = 0;
+
+                PrintSongList();
+                break;
+
+            case 'k':
+                State.selected--;
+
+                if (State.selected < 0)
+                    State.selected = std::min((long)(State.songList.size() - 1), (long)songListSubWin->_maxy - 2);
+
+                PrintSongList();
+                break;
+
+            case '\n':
+                State.pressedEnter = true;
+                State.songInQ = State.selected;
+                break;
+
             case 12:
                 PrintSongName();
                 PrintVolume();
+                RefreshWindows();
+                PrintSongList();
                 break;
 
             default:
-#ifndef NDEBUG
+#ifdef DEBUG
                 PrintCharPressed(c);
 #endif
                 break;
@@ -205,9 +300,11 @@ OpusPlay(const std::string_view s)
     /* opus can do 1920 max haven't figured why tho */
     u32 ChunkSize = 1920;
 
+    PrintMinSec(lengthInS, lengthInS);
     PrintSongName();
-    PrintMinSec(lengthInS);
     PrintVolume();
+    RefreshWindows();
+    PrintSongList();
 
     /* some songs give !2 channels, and speedup playback */
     player::Alsa p("default", channels, ChunkSize);
@@ -233,7 +330,7 @@ OpusPlay(const std::string_view s)
             u64 now = op_pcm_tell(parser);
 
             if (State.paused) {
-                PrintMinSec(now / p.sampleRate);
+                PrintMinSec(now / p.sampleRate, lengthInS);
 
                 p.Pause();
 
@@ -241,6 +338,10 @@ OpusPlay(const std::string_view s)
                 playCV.wait(lock);
 
                 p.Resume();
+            }
+
+            if (State.pressedEnter) {
+                break;
             }
 
             if (State.right) {
@@ -276,7 +377,7 @@ OpusPlay(const std::string_view s)
 
             if (counter++ % 100) {
                 now = op_pcm_tell(parser);
-                PrintMinSec(now / p.sampleRate);
+                PrintMinSec(now / p.sampleRate, lengthInS);
             }
 
             /* modify chunk */
@@ -285,7 +386,7 @@ OpusPlay(const std::string_view s)
             /* minimize crack at the very beggining of playback */
             if (rampVol <= 1.0) {
                 vol *= rampVol;
-                rampVol += 0.02; /* 50 increments */
+                rampVol += 0.03; /* 34 increments */
             }
 
             for (size_t i = 0; i < p.periodTime; i += 2) { /* 2 channels hardcoded */
@@ -322,10 +423,28 @@ main(int argc, char* argv[])
     setlocale(LC_ALL, "");
 
     initscr();
-    // start_color();
+    start_color();
+    use_default_colors();
     curs_set(0);
     noecho();
+    cbreak();
     refresh();
+
+    init_pair(1, COLOR_BLACK, COLOR_GREEN);
+    init_pair(2, COLOR_BLACK, COLOR_YELLOW);
+    init_pair(3, COLOR_BLACK, COLOR_BLUE);
+
+    /* TODO: hardcoded numbers */
+    songListWin = newwin(stdscr->_maxy - 6, stdscr->_maxx, 6, 0);
+    box(songListWin, 0, 0);
+    songListSubWin = subwin(songListWin,
+                            songListWin->_maxy - 1,
+                            songListWin->_maxx - 1,
+                            songListWin->_begy + 1,
+                            songListWin->_begx + 1);
+
+
+    wrefresh(songListWin);
 
     std::thread input(ReadInput);
     input.detach();
@@ -352,9 +471,16 @@ main(int argc, char* argv[])
             continue;
         }
 
+        if (State.pressedEnter) {
+            State.pressedEnter = false;
+            continue;
+        }
+
         State.songInQ++;
     }
 
+    delwin(songListSubWin);
+    delwin(songListWin);
     endwin();
     return 0;
 }
