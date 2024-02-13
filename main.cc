@@ -164,8 +164,8 @@ RefreshWindows()
     wresize(songListWin, stdscr->_maxy - 6, stdscr->_maxx);
     wresize(songListSubWin, songListWin->_maxy - 1, songListWin->_maxx - 1);
 
-    wmove(songListSubWin, songListSubWin->_begy, songListSubWin->_begx);
-    /* TODO: borders and test residues on resize */
+    /* TODO: borders and text residues on resize */
+    // wmove(songListSubWin, songListSubWin->_begy, songListSubWin->_begx);
     // wclrtoeol(songListSubWin);
 
     box(songListWin, 0, 0);
