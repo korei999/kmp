@@ -4,6 +4,6 @@ cd $(dirname $0)
 if make debug
 then
     echo ""
-    ASAN_OPTIONS=detect_leaks=1 LSAN_OPTIONS=suppressions=suppr.txt ./build/kmp "$@"
+    ASAN_OPTIONS=detect_leaks=1 LSAN_OPTIONS=suppressions=suppr.txt ./build/kmp "$@" 2> /tmp/kmperr.txt
 fi
 

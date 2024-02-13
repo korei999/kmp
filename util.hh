@@ -5,6 +5,7 @@
 #include <ncurses.h>
 
 #include <string_view>
+#include <iostream>
 
 #define Printf std::cout << std::format
 #define Printe std::cerr << std::format

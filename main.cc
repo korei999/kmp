@@ -18,6 +18,8 @@ enum Clr : int {
     blackGreen = 1,
     blackYellow = 2,
     blackBlue = 3,
+    blackRed = 4,
+    redBlack = 5
 };
 
 /* gloabls */
@@ -32,7 +34,7 @@ namespace g {
 }
 
 state State {
-    .volume = 1.002f,
+    .volume = 1.010f,
     .minVolume = 1.000f,
     .maxVolume = 1.261f,
 
@@ -107,31 +109,53 @@ PrintSongList()
 {
     std::lock_guard lock(printMtx);
 
-    auto maxNumLen = std::to_string(State.songList.size()).size();
-    std::string_view selfmt {"selected: %*u\tinQ: %*lu"};
+    int maxNumLen = std::to_string(State.songList.size()).size();
+    std::string_view selfmt {"i: %*ld | selected: %*ld | inQ: %*ld | maxlines: %*ld | first: %*ld | second: %*ld]"};
 
-    auto diff = songListSubWin->_maxy - State.songInQ;
-    for (size_t i = 0; i < State.songList.size() && i < (size_t)songListSubWin->_maxy - 1; i++) {
-        std::string delpath {State.songList[i]};
-        delpath = delpath.substr(delpath.find_last_of("/") + 1, delpath.size());
+    long maxlines = songListSubWin->_maxy + 1;
 
-        size_t off = i + 1;
+    long max = State.songList.size();
+    long first = 0 + State.selected;
+    long second = std::min(maxlines + State.selected, max);
 
-        wmove(songListSubWin, off, 1);
-        wclrtoeol(songListSubWin);
+    for (long i = 0; i < maxlines; i++) {
+        long sel = i + State.selected;
 
-        if ((long)i == State.selected) {
-            // wattron(songListSubWin, A_REVERSE);
-            wattron(songListSubWin, COLOR_PAIR(Clr::blackBlue));
+        if (i + State.selected < (long)State.songList.size()) {
+            std::string delpath {State.songList[sel]};
+            delpath = delpath.substr(delpath.find_last_of("/") + 1, delpath.size());
+
+            wmove(songListSubWin, i, 0);
+            wclrtoeol(songListSubWin);
+
+            if (sel == State.songInQ)
+                wattron(songListSubWin, COLOR_PAIR(Clr::redBlack));
+
+            mvwprintw(songListSubWin, i, 1, "%.*s",  songListSubWin->_maxx - 2, delpath.data());
+
+            wattroff(songListSubWin, A_REVERSE | COLOR_PAIR(Clr::redBlack));
+
+            mvwprintw(songListSubWin,
+                    0,
+                    songListSubWin->_maxx - selfmt.size() - maxNumLen*2,
+                    selfmt.data(),
+                    maxNumLen,
+                    i,
+                    maxNumLen,
+                    State.selected,
+                    maxNumLen,
+                    State.songInQ,
+                    maxNumLen,
+                    songListSubWin->_maxy - 1,
+                    maxNumLen,
+                    first,
+                    maxNumLen,
+                    second);
+        } else {
+            wmove(songListSubWin, i, 0);
+            wclrtoeol(songListSubWin);
         }
-
-        mvwprintw(songListSubWin, 1, songListSubWin->_maxx - selfmt.size() - maxNumLen*2 ,selfmt.data(), maxNumLen, State.selected, maxNumLen, State.songInQ);
-        mvwprintw(songListSubWin, off, songListSubWin->_begx + 1, "%.*s",  songListSubWin->_maxx - 2, delpath.data());
-
-        // wattroff(songListSubWin, A_REVERSE);
-        wattroff(songListSubWin, COLOR_PAIR(Clr::blackBlue));
     }
-
 
     wrefresh(songListSubWin);
 }
@@ -246,10 +270,7 @@ ReadInput(void)
             case 'j':
                 State.selected++;
 
-                // if (State.selected > std::min((long)State.songList.size(), (long)songListSubWin->_maxy - 2))
-                    // State.selected = 0;
-
-                if (State.selected > (long)State.songList.size())
+                if (State.selected > (long)State.songList.size() - 1)
                     State.selected = 0;
 
                 PrintSongList();
@@ -259,7 +280,7 @@ ReadInput(void)
                 State.selected--;
 
                 if (State.selected < 0)
-                    State.selected = std::min((long)(State.songList.size() - 1), (long)songListSubWin->_maxy - 2);
+                    State.selected = (long)(State.songList.size() - 1);
 
                 PrintSongList();
                 break;
@@ -444,6 +465,8 @@ main(int argc, char* argv[])
     init_pair(1, COLOR_BLACK, COLOR_GREEN);
     init_pair(2, COLOR_BLACK, COLOR_YELLOW);
     init_pair(3, COLOR_BLACK, COLOR_BLUE);
+    init_pair(4, COLOR_BLACK, COLOR_RED);
+    init_pair(5, COLOR_RED, COLOR_BLACK);
 
     /* TODO: hardcoded numbers */
     songListWin = newwin(stdscr->_maxy - 6, stdscr->_maxx, 6, 0);
