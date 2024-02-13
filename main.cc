@@ -74,6 +74,7 @@ PrintMinSec(size_t timeInSec, size_t len)
     int fracmax = 60 * (minFmax - minutesmax);
 
     move(0, 0);
+    clrtoeol();
     if (State.paused)
         printw("(paused) %lu:%02d / %lu:%02d min", minutes, frac, minutesmax, fracmax);
     else
@@ -140,10 +141,15 @@ PrintSongName()
 {
     std::lock_guard pl(printMtx);
 
-    clear();
-    mvprintw(4, 0, "%lu / %lu playing:", State.songInQ + 1, State.songList.size());
+    move(4, 0);
+    clrtoeol();
+    printw("%lu / %lu playing:", State.songInQ + 1, State.songList.size());
+
+    move(5, 0);
+    clrtoeol();
     attron(COLOR_PAIR(Clr::blackYellow));
-    mvprintw(5, 0, "%s", State.songList[State.songInQ].data()); 
+    printw("%s", State.songList[State.songInQ].data()); 
+
     attroff(COLOR_PAIR(Clr::blackYellow));
 
     refresh();
@@ -158,7 +164,10 @@ RefreshWindows()
     wresize(songListWin, stdscr->_maxy - 6, stdscr->_maxx);
     wresize(songListSubWin, songListWin->_maxy - 1, songListWin->_maxx - 1);
 
-    wclear(songListWin);
+    wmove(songListSubWin, songListSubWin->_begy, songListSubWin->_begx);
+    /* TODO: borders and test residues on resize */
+    // wclrtoeol(songListSubWin);
+
     box(songListWin, 0, 0);
     wrefresh(songListWin);
 }
@@ -170,7 +179,9 @@ PrintCharPressed(char c)
     std::lock_guard pl(printMtx);
 
     std::string_view fmt {"pressed: %c(%d)"};
-    mvprintw(stdscr->_maxy, (stdscr->_maxx - fmt.size()), fmt.data(), c, c);
+    move(stdscr->_maxy, (stdscr->_maxx - fmt.size()));
+    clrtoeol();
+    printw(fmt.data(), c, c);
 }
 #endif
 

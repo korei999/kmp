@@ -28,7 +28,7 @@ all: CFLAGS += -O2 -march=sandybridge $(WARNING) -DNDEBUG
 all: $(EXEC)
 
 # debug build
-debug: CC += #$(ASAN)
+debug: CC += $(ASAN)
 debug: CFLAGS += -O0 $(DEBUG) $(WARNING) $(WNO)
 debug: LDFLAGS += -fuse-ld=mold
 debug: $(EXEC)
