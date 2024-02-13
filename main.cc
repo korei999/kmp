@@ -365,7 +365,7 @@ main(int argc, char* argv[])
     use_default_colors();
     curs_set(0);
     noecho();
-    // cbreak();
+    cbreak();
     refresh();
 
     init_pair(1, COLOR_GREEN, COLOR_BLACK);

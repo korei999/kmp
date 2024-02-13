@@ -7,6 +7,8 @@ ReadInput()
     char c;
     bool volume_changed = false;
     bool lockChanged = false;
+    long size = State.songList.size();
+
     while ( (c = getch()) ) {
         switch (c) {
             case 'q':
@@ -63,8 +65,8 @@ ReadInput()
                 State.goDown = true;
                 State.inQSelected++;
 
-                if (State.inQSelected > (long)State.songList.size() - 1)
-                    State.inQSelected = (long)State.songList.size() - 1;
+                if (State.inQSelected > size - 1)
+                    State.inQSelected = size - 1;
 
                 PrintSongList();
                 break;
@@ -85,8 +87,8 @@ ReadInput()
                 PrintSongList();
                 break;
             case 'G':
-                State.inQSelected = State.songList.size() - 1;
-                State.firstToDraw = (State.songList.size() - 1) - songListSubWin->_maxy;
+                State.inQSelected = size - 1;
+                State.firstToDraw = (size - 1) - songListSubWin->_maxy;
 
                 PrintSongList();
                 break;
@@ -95,9 +97,9 @@ ReadInput()
                 State.inQSelected += 22;
                 State.firstToDraw += 22;
 
-                if (State.inQSelected > (long)State.songList.size() - 1) {
-                    State.inQSelected = (State.songList.size() - 1);
-                    State.firstToDraw = (State.songList.size() - 1) - songListSubWin->_maxy;
+                if (State.inQSelected > size - 1 || State.firstToDraw > size) {
+                    State.inQSelected = (size - 1);
+                    State.firstToDraw = (size - 1) - songListSubWin->_maxy;
                 }
 
                 PrintSongList();
@@ -106,7 +108,7 @@ ReadInput()
                 State.inQSelected -= 22;
                 State.firstToDraw -= 22;
 
-                if (State.inQSelected < 0) {
+                if (State.inQSelected < 0 || State.firstToDraw < 0) {
                     State.inQSelected = 0;
                     State.firstToDraw = 0;
                 }
