@@ -13,15 +13,15 @@ ReadInput()
                 State.exit = true;
 
                 if (State.paused)
-                    playCV.notify_one();
+                    playCnd.notify_one();
 
                 return;
 
-            case 'n':
+            case 'o':
                 State.next = true;
                 break;
 
-            case 'p':
+            case 'i':
                 State.prev = true;
                 break;
 
@@ -59,27 +59,35 @@ ReadInput()
                 lockChanged = true;
                 break;
 
-            case 'j':
-                State.selected++;
-
-                if (State.selected > (long)State.songList.size() - 1)
-                    State.selected = 0;
-
+            case 'n':
+                State.inQSelected++;
+                if (State.inQSelected > (long)State.songList.size() - 1)
+                    State.inQSelected = 0;
+                PrintSongList();
+                break;
+            case 'p':
+                State.inQSelected--;
+                if (State.inQSelected < 0)
+                    State.inQSelected = (long)(State.songList.size() - 1);
                 PrintSongList();
                 break;
 
+            case 'j':
+                State.selected++;
+                if (State.selected > (long)State.songList.size() - 1)
+                    State.selected = 0;
+                PrintSongList();
+                break;
             case 'k':
                 State.selected--;
-
                 if (State.selected < 0)
                     State.selected = (long)(State.songList.size() - 1);
-
                 PrintSongList();
                 break;
 
             case '\n':
                 State.pressedEnter = true;
-                State.songInQ = State.selected;
+                State.inQ = State.inQSelected;
                 break;
 
             case 12:
@@ -105,7 +113,7 @@ ReadInput()
 
         if (lockChanged && !State.paused) {
             lockChanged = false;
-            playCV.notify_one();
+            playCnd.notify_one();
         }
     }
 }

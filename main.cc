@@ -51,17 +51,17 @@ state State {
 
     .pressedEnter = false,
 
-    .songInQ = 0,
-    .selected = 0,
-    .vSelected = 0
+    .inQ = 0,
+    .inQSelected = 0,
+    .selected = 0
 };
 
 WINDOW* songListWin;
 WINDOW* songListSubWin;
 
 std::mutex printMtx;
-std::mutex playMutex;
-std::condition_variable playCV;
+std::mutex playMtx;
+std::condition_variable playCnd;
 
 void
 PrintMinSec(size_t timeInSec, size_t len)
@@ -111,7 +111,7 @@ PrintSongList()
     std::lock_guard lock(printMtx);
 
     int maxNumLen = std::to_string(State.songList.size()).size();
-    std::string_view selfmt {"i: %*ld | selected: %*ld | inQ: %*ld | maxlines: %*ld | first: %*ld | second: %*ld]"};
+    std::string_view selfmt {"inQSelected: %*ld | selected: %*ld | inQ: %*ld | maxlines: %*ld | first: %*ld | second: %*ld]"};
 
     long maxlines = songListSubWin->_maxy + 1;
 
@@ -129,29 +129,32 @@ PrintSongList()
             wmove(songListSubWin, i, 0);
             wclrtoeol(songListSubWin);
 
-            if (sel == State.songInQ)
+            if (sel == State.inQ)
                 wattron(songListSubWin, COLOR_PAIR(Clr::redBlack));
+
+            if (sel == State.inQSelected)
+                wattron(songListSubWin, A_REVERSE);
 
             mvwprintw(songListSubWin, i, 1, "%.*s",  songListSubWin->_maxx - 2, delpath.data());
 
             wattroff(songListSubWin, A_REVERSE | COLOR_PAIR(Clr::redBlack));
 
             mvwprintw(songListSubWin,
-                    0,
-                    songListSubWin->_maxx - selfmt.size() - maxNumLen*2,
-                    selfmt.data(),
-                    maxNumLen,
-                    i,
-                    maxNumLen,
-                    State.selected,
-                    maxNumLen,
-                    State.songInQ,
-                    maxNumLen,
-                    songListSubWin->_maxy - 1,
-                    maxNumLen,
-                    first,
-                    maxNumLen,
-                    second);
+                      0,
+                      songListSubWin->_maxx - selfmt.size(),
+                      selfmt.data(),
+                      maxNumLen,
+                      State.inQSelected,
+                      maxNumLen,
+                      State.selected,
+                      maxNumLen,
+                      State.inQ,
+                      maxNumLen,
+                      songListSubWin->_maxy - 1,
+                      maxNumLen,
+                      first,
+                      maxNumLen,
+                      second);
         } else {
             wmove(songListSubWin, i, 0);
             wclrtoeol(songListSubWin);
@@ -168,12 +171,12 @@ PrintSongName()
 
     move(4, 0);
     clrtoeol();
-    printw("%lu / %lu playing:", State.songInQ + 1, State.songList.size());
+    printw("%lu / %lu playing:", State.inQ + 1, State.songList.size());
 
     move(5, 0);
     clrtoeol();
     attron(COLOR_PAIR(Clr::blackYellow));
-    printw("%s", State.songList[State.songInQ].data()); 
+    printw("%s", State.songList[State.inQ].data()); 
 
     attroff(COLOR_PAIR(Clr::blackYellow));
 
@@ -232,7 +235,7 @@ OpusPlay(const std::string_view s)
 
     /* some songs give !2 channels, and speedup playback */
     player::Alsa p("default", channels, ChunkSize);
-    // p.Print();
+    p.Print();
 
     s16* chunk = new s16[ChunkSize];
 
@@ -258,8 +261,8 @@ OpusPlay(const std::string_view s)
 
                 p.Pause();
 
-                std::unique_lock lock(playMutex);
-                playCV.wait(lock);
+                std::unique_lock lock(playMtx);
+                playCnd.wait(lock);
 
                 p.Resume();
             }
@@ -282,19 +285,19 @@ OpusPlay(const std::string_view s)
 
             if (State.next || State.repeatOnEnd) {
                 if (State.next)
-                    State.songInQ++;
+                    State.inQ++;
 
-                if (State.songInQ == (long)State.songList.size())
-                    State.songInQ = 0;
+                if (State.inQ == (long)State.songList.size())
+                    State.inQ = 0;
 
                 break;
             }
 
             if (State.prev) {
-                State.songInQ--;
+                State.inQ--;
 
-                if (State.songInQ < 0)
-                    State.songInQ = State.songList.size() - 1;
+                if (State.inQ < 0)
+                    State.inQ = State.songList.size() - 1;
 
                 break;
             }
@@ -382,11 +385,11 @@ main(int argc, char* argv[])
         }
     }
 
-    while (State.songInQ < (long)State.songList.size()) {
+    while (State.inQ < (long)State.songList.size()) {
         if (State.exit)
             break;
 
-        OpusPlay(State.songList[State.songInQ]);
+        OpusPlay(State.songList[State.inQ]);
         if (State.prev) {
             State.prev = false;
             continue;
@@ -402,7 +405,7 @@ main(int argc, char* argv[])
             continue;
         }
 
-        State.songInQ++;
+        State.inQ++;
     }
 
     delwin(songListSubWin);

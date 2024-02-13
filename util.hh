@@ -4,8 +4,9 @@
 #include <cmath>
 #include <ncurses.h>
 
-#include <string_view>
+#include <format>
 #include <iostream>
+#include <string_view>
 
 #define Printf std::cout << std::format
 #define Printe std::cerr << std::format
@@ -28,7 +29,7 @@ LinearToDB(const f64 linear)
 
 template <class T>
 inline constexpr T
-Clamp(T value, T min, T max)
+Clamp(T& value, T& min, T& max)
 {
     if (value < min)
         return min;

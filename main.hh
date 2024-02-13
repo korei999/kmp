@@ -43,13 +43,12 @@ struct state {
     bool pressedEnter = false;
 
     std::vector<std::string_view> songList {};
-    long songInQ = 0;
+    long inQ = 0;
+    long inQSelected = 0;
     long selected = 0;
-    long vSelected = 0;
 };
 
 extern state State;
 extern std::mutex printMtx;
-extern std::mutex playMutex;
-extern std::condition_variable playCV;
-
+extern std::mutex playMtx;
+extern std::condition_variable playCnd;

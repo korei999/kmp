@@ -234,12 +234,13 @@ namespace player {
         {
 #ifdef DEBUG
             std::lock_guard lock(printMtx);
-            mvprintw(0, 0, "channels: %u\n", channels);
-            mvprintw(1, 0, "sampleRate: %u\n", sampleRate);
-            mvprintw(2, 0, "bufferTime: %u\n", bufferTime);
-            mvprintw(3, 0, "periodTime: %u\n", periodTime);
-            mvprintw(4, 0, "bufferSize: %lu\n", bufferSize);
-            mvprintw(5, 0, "periodSize: %lu\n", periodSize);
+            Printe("{}\n", State.songList[State.inQ]);
+            Printe("channels: {}\n", channels);
+            Printe("sampleRate: {}\n", sampleRate);
+            Printe("bufferTime: {}\n", bufferTime);
+            Printe("periodTime: {}\n", periodTime);
+            Printe("bufferSize: {}\n", bufferSize);
+            Printe("periodSize: {}\n", periodSize);
             refresh();
 #endif
         }
