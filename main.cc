@@ -15,10 +15,10 @@
 #include <format>
 
 enum Clr : int {
-    blackGreen = 1,
-    blackYellow = 2,
-    blackBlue = 3,
-    blackRed = 4,
+    greenBlack = 1,
+    yellowBlack = 2,
+    blueBlack = 3,
+    cyanBlack = 4,
     redBlack = 5
 };
 
@@ -82,9 +82,9 @@ PrintVolume()
     move(1, 0);
     clrtoeol();
 
-    attron(COLOR_PAIR(Clr::blackGreen));
+    attron(A_BOLD | COLOR_PAIR(Clr::greenBlack));
     printw(volfmt, frac / 2);
-    attroff(COLOR_PAIR(Clr::blackGreen));
+    attroff(A_BOLD | COLOR_PAIR(Clr::greenBlack));
     refresh();
 }
 
@@ -105,12 +105,12 @@ PrintSongListInRange(long first, long last)
             wclrtoeol(songListSubWin);
 
             if (sel == State.inQ)
-                wattron(songListSubWin, COLOR_PAIR(Clr::redBlack));
+                wattron(songListSubWin, COLOR_PAIR(Clr::yellowBlack));
             if (sel == State.inQSelected)
                 wattron(songListSubWin, A_REVERSE);
 
             mvwprintw(songListSubWin, i, 1, "%.*s",  songListSubWin->_maxx - 2, delpath.data());
-            wattroff(songListSubWin, A_REVERSE | COLOR_PAIR(Clr::redBlack));
+            wattroff(songListSubWin, A_REVERSE | COLOR_PAIR(Clr::yellowBlack));
         } else {
             wmove(songListSubWin, i, 0);
             wclrtoeol(songListSubWin);
@@ -184,10 +184,10 @@ PrintSongName()
 
     move(5, 0);
     clrtoeol();
-    attron(COLOR_PAIR(Clr::blackYellow));
+    attron(A_BOLD | COLOR_PAIR(Clr::yellowBlack));
     printw("%s", State.songList[State.inQ].data()); 
 
-    attroff(COLOR_PAIR(Clr::blackYellow));
+    attroff(A_BOLD | COLOR_PAIR(Clr::yellowBlack));
 
     refresh();
 }
@@ -206,6 +206,8 @@ RefreshWindows()
     // wclrtoeol(songListSubWin);
 
     box(songListWin, 0, 0);
+    move(stdscr->_maxy, 0);
+    clrtoeol();
     wrefresh(songListWin);
 }
 
@@ -363,13 +365,13 @@ main(int argc, char* argv[])
     use_default_colors();
     curs_set(0);
     noecho();
-    cbreak();
+    // cbreak();
     refresh();
 
-    init_pair(1, COLOR_BLACK, COLOR_GREEN);
-    init_pair(2, COLOR_BLACK, COLOR_YELLOW);
-    init_pair(3, COLOR_BLACK, COLOR_BLUE);
-    init_pair(4, COLOR_BLACK, COLOR_RED);
+    init_pair(1, COLOR_GREEN, COLOR_BLACK);
+    init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(3, COLOR_BLUE, COLOR_BLACK);
+    init_pair(4, COLOR_CYAN, COLOR_BLACK);
     init_pair(5, COLOR_RED, COLOR_BLACK);
 
     /* TODO: hardcoded numbers */

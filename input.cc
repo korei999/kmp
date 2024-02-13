@@ -91,6 +91,29 @@ ReadInput()
                 PrintSongList();
                 break;
 
+            case 4: /* C-d */
+                State.inQSelected += 22;
+                State.firstToDraw += 22;
+
+                if (State.inQSelected > (long)State.songList.size() - 1) {
+                    State.inQSelected = (State.songList.size() - 1);
+                    State.firstToDraw = (State.songList.size() - 1) - songListSubWin->_maxy;
+                }
+
+                PrintSongList();
+                break;
+            case 21: /* C-u */
+                State.inQSelected -= 22;
+                State.firstToDraw -= 22;
+
+                if (State.inQSelected < 0) {
+                    State.inQSelected = 0;
+                    State.firstToDraw = 0;
+                }
+
+                PrintSongList();
+                break;
+
             case '\n':
                 State.pressedEnter = true;
                 State.inQ = State.inQSelected;

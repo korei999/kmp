@@ -8,6 +8,7 @@
 #include <string_view>
 #include <vector>
 
+/* Printing to ncurses screen is not thread safe, use global printMtx mutex lock */
 void PrintVolume();
 void PrintCharPressed(char c);
 void PrintSongList();

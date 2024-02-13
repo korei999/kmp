@@ -2,7 +2,7 @@ MAKEFLAGS := --jobs=$(shell nproc) --output-sync=target
 
 include dbg.mk
 
-CC := g++ -fdiagnostics-color=always
+CC := clang++ -fdiagnostics-color=always
 WARNING := -Wall -Wextra -Wpedantic
 
 OPUS := $(shell pkg-config --cflags opusfile opus)
