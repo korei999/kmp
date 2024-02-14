@@ -97,9 +97,11 @@ ReadInput()
                 State.inQSelected += 22;
                 State.firstToDraw += 22;
 
-                if (State.inQSelected > size - 1 || State.firstToDraw > size) {
-                    State.inQSelected = (size - 1);
+                if (State.firstToDraw > size) {
                     State.firstToDraw = (size - 1) - songListSubWin->_maxy;
+                }
+                if (State.inQSelected >= size) {
+                    State.inQSelected = size - 1;
                 }
 
                 PrintSongList();
@@ -108,10 +110,10 @@ ReadInput()
                 State.inQSelected -= 22;
                 State.firstToDraw -= 22;
 
-                if (State.inQSelected < 0 || State.firstToDraw < 0) {
-                    State.inQSelected = 0;
+                if (State.firstToDraw < 0)
                     State.firstToDraw = 0;
-                }
+                if (State.inQSelected < 0)
+                    State.inQSelected = 0;
 
                 PrintSongList();
                 break;
@@ -130,7 +132,7 @@ ReadInput()
 
             default:
 #ifdef DEBUG
-                PrintCharPressed(c);
+                PrintCharDebug(c);
 #endif
                 break;
         }

@@ -8,11 +8,9 @@
 #include <locale.h>
 #include <ncurses.h>
 #include <opus/opusfile.h>
-#include <printf.h>
 
 #include <mutex>
 #include <thread>
-#include <format>
 
 enum Clr : int {
     greenBlack = 1,
@@ -27,8 +25,8 @@ namespace g {
     unsigned sampleRate = 48000;
     unsigned channels = 2;
 
-    unsigned bufferTime = 100'000;       /* ring buffer length in us */ /* 500'000 us == 0.5 s */
-    unsigned periodTime = 20'000;       /* period time in us */
+    unsigned bufferTime = 250'000;       /* ring buffer length in us */ /* 500'000 us == 0.5 s */
+    unsigned periodTime = 100'000;       /* period time in us */
 
     unsigned step = 200;
 }
@@ -93,11 +91,20 @@ static void
 PrintSongListInRange(long first, long last)
 {
     long maxlines = songListSubWin->_maxy + 1;
+    long size = State.songList.size();
+
+    if (size < maxlines) {
+        first = 0;
+        last = size;
+    } else if (last > size && (size - maxlines) >= 0) {
+        first = size - maxlines;
+        last = size;
+    }
 
     for (long i = 0; i < last; i++) {
         long sel = i + first;
 
-        if (sel < (long)State.songList.size()) {
+        if (sel < size) {
             std::string delpath {State.songList[sel]};
             delpath = delpath.substr(delpath.find_last_of("/") + 1, delpath.size());
 
@@ -125,16 +132,24 @@ PrintSongList()
 {
     std::lock_guard lock(printMtx);
 
-    int maxNumLen = std::to_string(State.songList.size()).size();
+    long size = State.songList.size();
+    int maxNumLen = std::to_string(size).size();
     std::string_view selfmt {"inQSelected: %*ld | inQ: %*ld | maxlines: %*ld | first: %*ld | second: %*ld]"};
 
     long last = State.firstToDraw + songListSubWin->_maxy + 1;
+        // long diff = last - size;
+        // if (State.firstToDraw - diff <= 0) {
+            // State.firstToDraw -= diff;
+            // last = size;
+            // Printe("HERE?\n");
+        // }
+    // }
 
     /* pressing j */
     if (State.goDown && State.inQSelected >= (last - State.scrolloff)) {
         State.goDown = false;
 
-        if (State.inQSelected < ((long)State.songList.size() - State.scrolloff))
+        if (State.inQSelected < (size - State.scrolloff))
             State.firstToDraw++;
     }
 
@@ -197,7 +212,6 @@ RefreshWindows()
 {
     std::lock_guard pl(printMtx);
 
-    // mvprintw(stdscr->_maxy, 0, "maxy: %d\tmaxx: %d", stdscr->_maxy, stdscr->_maxx);
     wresize(songListWin, stdscr->_maxy - 6, stdscr->_maxx);
     wresize(songListSubWin, songListWin->_maxy - 1, songListWin->_maxx - 1);
 
@@ -213,14 +227,16 @@ RefreshWindows()
 
 #ifdef DEBUG
 void
-PrintCharPressed(char c)
+PrintCharDebug(char c)
 {
     std::lock_guard pl(printMtx);
+
 
     std::string_view fmt {"pressed: %c(%d)"};
     move(stdscr->_maxy, (stdscr->_maxx - fmt.size()));
     clrtoeol();
     printw(fmt.data(), c, c);
+    mvprintw(stdscr->_maxy, 0, "size: %lu", State.songList.size());
 }
 #endif
 

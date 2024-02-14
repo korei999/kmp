@@ -24,7 +24,7 @@ OBJ := $(SRCS:%=$(BD)/%.o)
 
 # release build
 all: CC += -flto=auto $(SAFE_STACK) 
-all: CFLAGS += -g -O2 -march=sandybridge $(WARNING) -DNDEBUG
+all: CFLAGS += -g -O3 -march=sandybridge $(WARNING) -DNDEBUG
 all: $(EXEC)
 
 # debug build
