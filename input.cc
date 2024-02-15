@@ -153,7 +153,19 @@ ReadInput()
             case 47: /* / */
                 maxlen = std::max(size_t(length(sbuff) - 1), size_t(bottomRow->_maxx - 1));
 
-                SubstringSearch(GetString(maxlen));
+                SubstringSearch(GetString(maxlen), true);
+
+                MoveToFound(0);
+                PrintSongList();
+
+                wmove(bottomRow, 0, 0);
+                wclrtobot(bottomRow);
+                break;
+
+            case 63: /* ? */
+                maxlen = std::max(size_t(length(sbuff) - 1), size_t(bottomRow->_maxx - 1));
+
+                SubstringSearch(GetString(maxlen), false);
 
                 MoveToFound(0);
                 PrintSongList();

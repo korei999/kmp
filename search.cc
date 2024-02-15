@@ -4,28 +4,36 @@
 std::vector<long> searchIndices {};
 long searchTarget;
 
-// void
-// LogHash(const std::string_view s)
-// {
-    // size_t h {std::hash<std::string_view>{}(s)};
-    // Printe("hash: {}\n", h);
-// }
+// size_t h {std::hash<std::string_view>{}(s)};
 
 void
-SubstringSearch(const std::string_view s)
+SubstringSearch(const std::string_view s, bool forward)
 {
     bool found {false};
     searchIndices.clear();
     searchTarget = -1;
 
-    for (size_t i = 0; i < State.songList.size(); i++) {
-        auto e = State.songList[i];
+    if (forward) {
+        for (size_t i = 0; i < State.songList.size(); i++) {
+            auto e = State.songList[i];
 
-        std::string delpath {e.substr(e.find_last_of("/") + 1, e.size())};
+            std::string delpath {e.substr(e.find_last_of("/") + 1, e.size())};
 
-        if (delpath.find(s) != std::string::npos) {
-            found = true;
-            searchIndices.push_back(i);
+            if (delpath.find(s) != std::string::npos) {
+                found = true;
+                searchIndices.push_back(i);
+            }
+        }
+    } else {
+        for (long i = State.songList.size() - 1; i >= 0; i--) {
+            auto e = State.songList[i];
+
+            std::string delpath {e.substr(e.find_last_of("/") + 1, e.size())};
+
+            if (delpath.find(s) != std::string::npos) {
+                found = true;
+                searchIndices.push_back(i);
+            }
         }
     }
 
@@ -33,6 +41,7 @@ SubstringSearch(const std::string_view s)
         searchTarget = 0;
     }
 }
+
 
 void
 MoveToFound(int forward)
@@ -44,7 +53,6 @@ MoveToFound(int forward)
 
     if (searchTarget != - 1 && !searchIndices.empty())
         State.inQSelected = searchIndices[searchTarget];
-
 
     if (searchTarget >= (long)searchIndices.size())
         searchTarget = 0;
