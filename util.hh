@@ -13,7 +13,6 @@
 
 #define Die(...)                                            \
     do {                                                    \
-        /* severity: ERROR/WARNING */                       \
         (void)printf("DIED: %s(%u): ", __FILE__, __LINE__); \
         (void)printf(__VA_ARGS__);                          \
         endwin();                                           \
@@ -21,14 +20,16 @@
 
 #define length(a) (sizeof(a) / sizeof(a[0]))
 
-inline constexpr f64
+inline constexpr
+f64
 LinearToDB(const f64 linear)
 {
     return 10.f * log10(linear);
 }
 
 template <class T>
-inline constexpr T
+inline constexpr
+T
 Clamp(T& value, T& min, T& max)
 {
     if (value < min)
@@ -51,7 +52,8 @@ struct pointer {
 };
 
 template <class T>
-inline pointer<T>
+inline
+pointer<T>
 file_load(const std::string_view path, size_t align = 1)
 {
     FILE* fp = fopen(path.data(), "rb");

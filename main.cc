@@ -3,7 +3,6 @@
 #include "util.hh"
 #include "wav.hh"
 #include "input.hh"
-#include "search.hh"
 
 #include <alsa/asoundlib.h>
 #include <locale.h>
@@ -421,7 +420,6 @@ main(int argc, char* argv[])
         if (State.exit)
             break;
 
-        LogHash(State.songList[State.inQ]);
         OpusPlay(State.songList[State.inQ]);
         if (State.prev) {
             State.prev = false;

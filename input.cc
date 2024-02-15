@@ -155,7 +155,7 @@ ReadInput()
 
                 SubstringSearch(GetString(maxlen));
 
-                MoveToFound();
+                MoveToFound(0);
                 PrintSongList();
 
                 wmove(bottomRow, 0, 0);
@@ -163,7 +163,11 @@ ReadInput()
                 break;
 
             case 'n':
-                MoveToFound();
+                MoveToFound(1);
+                PrintSongList();
+                break;
+            case 'N':
+                MoveToFound(-1);
                 PrintSongList();
                 break;
 

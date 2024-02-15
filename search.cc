@@ -1,16 +1,15 @@
 #include "search.hh"
-#include "util.hh"
 #include "main.hh"
 
 std::vector<long> searchIndices {};
 long searchTarget;
 
-void
-LogHash(const std::string_view s)
-{
-    size_t h {std::hash<std::string_view>{}(s)};
-    Printe("hash: {}\n", h);
-}
+// void
+// LogHash(const std::string_view s)
+// {
+    // size_t h {std::hash<std::string_view>{}(s)};
+    // Printe("hash: {}\n", h);
+// }
 
 void
 SubstringSearch(const std::string_view s)
@@ -36,13 +35,21 @@ SubstringSearch(const std::string_view s)
 }
 
 void
-MoveToFound()
+MoveToFound(int forward)
 {
+    if (forward == 1)
+        searchTarget++;
+    else if (forward == -1)
+        searchTarget--;
+
     if (searchTarget != - 1 && !searchIndices.empty())
-        State.inQSelected = searchIndices[searchTarget++];
+        State.inQSelected = searchIndices[searchTarget];
+
 
     if (searchTarget >= (long)searchIndices.size())
         searchTarget = 0;
+    else if (searchTarget < 0)
+        searchTarget = searchIndices.size() - 1;
 
     if (State.inQSelected < State.firstToDraw || State.inQSelected >= (State.firstToDraw + songListSubWin->_maxy)) {
         State.firstToDraw = State.inQSelected - State.scrolloff;
