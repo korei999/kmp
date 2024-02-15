@@ -155,7 +155,7 @@ ReadInput()
 
                 SubstringSearch(GetString(maxlen), true);
 
-                MoveToFound(0);
+                MoveToFound(SeachNP::nochange);
                 PrintSongList();
 
                 wmove(bottomRow, 0, 0);
@@ -167,7 +167,7 @@ ReadInput()
 
                 SubstringSearch(GetString(maxlen), false);
 
-                MoveToFound(0);
+                MoveToFound(SeachNP::nochange);
                 PrintSongList();
 
                 wmove(bottomRow, 0, 0);
@@ -175,11 +175,11 @@ ReadInput()
                 break;
 
             case 'n':
-                MoveToFound(1);
+                MoveToFound(SeachNP::forward);
                 PrintSongList();
                 break;
             case 'N':
-                MoveToFound(-1);
+                MoveToFound(SeachNP::backwards);
                 PrintSongList();
                 break;
 

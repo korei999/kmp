@@ -43,17 +43,14 @@ SubstringSearch(const std::string_view s, bool forward)
 }
 
 void
-MoveToFound(int forward)
+MoveToFound(SeachNP val)
 {
     if (searchTarget != - 1) {
-        if (forward == 1)
-            searchTarget++;
-        else if (forward == -1)
-            searchTarget--;
+        searchTarget += (int)val;
 
-        if (forward == 1 && searchTarget >= (long)searchIndices.size()) {
+        if (searchTarget >= (long)searchIndices.size()) {
             searchTarget = 0;
-        } else if (forward == - 1 && searchTarget < 0) {
+        } else if (searchTarget < 0) {
             searchTarget = searchIndices.size() - 1;
         }
 
