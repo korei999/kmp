@@ -42,24 +42,26 @@ SubstringSearch(const std::string_view s, bool forward)
     }
 }
 
-
 void
 MoveToFound(int forward)
 {
-    if (forward == 1)
-        searchTarget++;
-    else if (forward == -1)
-        searchTarget--;
+    if (searchTarget != - 1) {
+        if (forward == 1)
+            searchTarget++;
+        else if (forward == -1)
+            searchTarget--;
 
-    if (searchTarget != - 1 && !searchIndices.empty())
-        State.inQSelected = searchIndices[searchTarget];
+        if (forward == 1 && searchTarget >= (long)searchIndices.size()) {
+            searchTarget = 0;
+        } else if (forward == - 1 && searchTarget < 0) {
+            searchTarget = searchIndices.size() - 1;
+        }
 
-    if (searchTarget >= (long)searchIndices.size())
-        searchTarget = 0;
-    else if (searchTarget < 0)
-        searchTarget = searchIndices.size() - 1;
+        if (!searchIndices.empty())
+            State.inQSelected = searchIndices[searchTarget];
 
-    if (State.inQSelected < State.firstToDraw || State.inQSelected >= (State.firstToDraw + songListSubWin->_maxy)) {
-        State.firstToDraw = State.inQSelected - State.scrolloff;
+        if (State.inQSelected < State.firstToDraw || State.inQSelected >= (State.firstToDraw + songListSubWin->_maxy)) {
+            State.firstToDraw = State.inQSelected - State.scrolloff;
+        }
     }
 }
