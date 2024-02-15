@@ -1,30 +1,23 @@
 #include "search.hh"
 #include "main.hh"
-#include <algorithm>
 
 std::vector<long> searchIndices {};
-long searchTarget;
+long searchTarget {-1};
 
 // size_t h {std::hash<std::string_view>{}(s)};
 
 void
-SubstringSearch(const std::string_view ss, bool forward)
+SubstringSearch(const std::string_view s, bool forward)
 {
     bool found {false};
     searchIndices.clear();
     searchTarget = -1;
-
-    std::string s {ss};
-    std::transform(s.begin(), s.end(), s.begin(),
-            [](unsigned char c){ return std::toupper(c); });
 
     if (forward) {
         for (size_t i = 0; i < State.songList.size(); i++) {
             auto e = State.songList[i];
 
             std::string delpath {e.substr(e.find_last_of("/") + 1, e.size())};
-            std::transform(delpath.begin(), delpath.end(), delpath.begin(),
-                    [](unsigned char c){ return std::toupper(c); });
             
 
             if (delpath.find(s) != std::string::npos) {
@@ -37,8 +30,6 @@ SubstringSearch(const std::string_view ss, bool forward)
             auto e = State.songList[i];
 
             std::string delpath {e.substr(e.find_last_of("/") + 1, e.size())};
-            std::transform(delpath.begin(), delpath.end(), delpath.begin(),
-                    [](unsigned char c){ return std::toupper(c); });
 
             if (delpath.find(s) != std::string::npos) {
                 found = true;
@@ -55,7 +46,7 @@ SubstringSearch(const std::string_view ss, bool forward)
 void
 MoveToFound(SeachNP val)
 {
-    if (searchTarget != - 1) {
+    if (searchTarget != - 1 || !searchIndices.empty()) {
         searchTarget += (int)val;
 
         if (searchTarget >= (long)searchIndices.size()) {
@@ -64,8 +55,7 @@ MoveToFound(SeachNP val)
             searchTarget = searchIndices.size() - 1;
         }
 
-        if (!searchIndices.empty())
-            State.inQSelected = searchIndices[searchTarget];
+        State.inQSelected = searchIndices[searchTarget];
 
         if (State.inQSelected < State.firstToDraw || State.inQSelected >= (State.firstToDraw + songListSubWin->_maxy)) {
             State.firstToDraw = State.inQSelected - State.scrolloff;
