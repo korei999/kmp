@@ -11,7 +11,7 @@ OPUS_LIB := $(shell pkg-config --libs opus opusfile)
 NCURSES := $(shell pkg-config --cflags ncursesw)
 NCURSES_LIB := $(shell pkg-config --libs ncursesw)
 
-CFLAGS := -std=c++2b -pipe $(OPUS) $(NCURSES)
+CFLAGS := -std=c++23 -pipe $(OPUS) $(NCURSES)
 LDFLAGS := -lasound -lm $(OPUS_LIB) $(NCURSES_LIB)
 
 SRCD := .
@@ -33,7 +33,7 @@ debug: CFLAGS += -O0 $(DEBUG) $(WARNING) $(WNO)
 debug: LDFLAGS += -fuse-ld=mold
 debug: $(EXEC)
 
-# arcane rules to build everything
+# rules to build everything
 $(EXEC): $(OBJ)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
