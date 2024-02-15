@@ -57,6 +57,7 @@ struct state {
 
 extern WINDOW* songListWin;
 extern WINDOW* songListSubWin;
+extern WINDOW* bottomRow;
 
 extern state State;
 extern std::mutex printMtx;

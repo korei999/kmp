@@ -1,5 +1,23 @@
 #include "input.hh"
 #include "util.hh"
+#include "main.hh"
+#include "search.hh"
+
+std::string
+GetString(size_t maxlen)
+{
+    std::string input;
+    echo();
+
+    int ch = wgetch(bottomRow);
+    while (ch != '\n') {
+        input.push_back( ch );
+        ch = wgetch(bottomRow);
+    }
+
+    noecho();
+    return input;
+}
 
 void
 ReadInput()
@@ -8,6 +26,8 @@ ReadInput()
     bool volume_changed = false;
     bool lockChanged = false;
     long size = State.songList.size();
+
+    size_t maxlen {};
 
     while ( (c = getch()) ) {
         switch (c) {
@@ -127,6 +147,23 @@ ReadInput()
                 PrintSongName();
                 PrintVolume();
                 RefreshWindows();
+                PrintSongList();
+                break;
+
+            case 47: /* / */
+                maxlen = std::max(size_t(length(sbuff) - 1), size_t(bottomRow->_maxx - 1));
+
+                SubstringSearch(GetString(maxlen));
+
+                MoveToFound();
+                PrintSongList();
+
+                wmove(bottomRow, 0, 0);
+                wclrtobot(bottomRow);
+                break;
+
+            case 'n':
+                MoveToFound();
                 PrintSongList();
                 break;
 

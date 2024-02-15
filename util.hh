@@ -19,7 +19,7 @@
         endwin();                                           \
     } while (0)
 
-#define Length(a) (sizeof(a) / sizeof(a[0]))
+#define length(a) (sizeof(a) / sizeof(a[0]))
 
 inline constexpr f64
 LinearToDB(const f64 linear)

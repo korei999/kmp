@@ -1,4 +1,7 @@
 #pragma once
-#include "main.hh"
+#include <string>
 
 void ReadInput();
+std::string GetString(size_t maxlen);
+
+extern char sbuff[255];

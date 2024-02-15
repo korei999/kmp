@@ -3,6 +3,7 @@
 #include "util.hh"
 #include "wav.hh"
 #include "input.hh"
+#include "search.hh"
 
 #include <alsa/asoundlib.h>
 #include <locale.h>
@@ -39,6 +40,7 @@ state State {
 
 WINDOW* songListWin;
 WINDOW* songListSubWin;
+WINDOW* bottomRow;
 
 std::mutex printMtx;
 std::mutex playMtx;
@@ -329,7 +331,7 @@ OpusPlay(const std::string_view s)
                 break;
             }
 
-            if (counter++ % 100) {
+            if (counter++ % 50) {
                 now = op_pcm_tell(parser);
                 PrintMinSec(now / p.sampleRate, lengthInS);
             }
@@ -399,21 +401,27 @@ main(int argc, char* argv[])
                             songListWin->_begy + 1,
                             songListWin->_begx + 1);
 
+    bottomRow = newwin(0, 0, stdscr->_maxy, 0);
+    wrefresh(bottomRow);
+
     wrefresh(songListWin);
 
     std::thread input(ReadInput);
 
-    for (int i = 1; i < argc; i++) {
+    for (long i = 1; i < argc; i++) {
+
         std::string_view songName = argv[i];
         if (songName.ends_with(".opus")) {
             State.songList.push_back(songName);
         }
     }
 
-    while (State.inQ < (long)State.songList.size()) {
+    long size = State.songList.size();
+    while (State.inQ < size) {
         if (State.exit)
             break;
 
+        LogHash(State.songList[State.inQ]);
         OpusPlay(State.songList[State.inQ]);
         if (State.prev) {
             State.prev = false;
