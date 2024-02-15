@@ -44,7 +44,7 @@ struct state {
     bool pressedEnter = false;
 
     std::vector<std::string_view> songList {};
-    long scrolloff = 3;
+    long scrolloff = 0;
 
     /* first index of song to draw in the list */
     long firstToDraw = 0;
