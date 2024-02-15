@@ -402,7 +402,6 @@ main(int argc, char* argv[])
     wrefresh(songListWin);
 
     std::thread input(ReadInput);
-    input.detach();
 
     for (int i = 1; i < argc; i++) {
         std::string_view songName = argv[i];
@@ -437,5 +436,6 @@ main(int argc, char* argv[])
     delwin(songListSubWin);
     delwin(songListWin);
     endwin();
+    input.join();
     return 0;
 }
