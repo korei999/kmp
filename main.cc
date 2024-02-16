@@ -12,14 +12,6 @@
 #include <mutex>
 #include <thread>
 
-enum Clr : int {
-    greenBlack = 1,
-    yellowBlack = 2,
-    blueBlack = 3,
-    cyanBlack = 4,
-    redBlack = 5
-};
-
 /* gloabls */
 namespace g {
     unsigned sampleRate = 48000;
@@ -87,8 +79,8 @@ PrintVolume()
     refresh();
 }
 
-inline
-static void
+inline static
+void
 PrintSongListInRange(long first, long last)
 {
     long maxlines = songListSubWin->_maxy + 1;
@@ -138,13 +130,6 @@ PrintSongList()
     std::string_view selfmt {"inQSelected: %*ld | inQ: %*ld | maxlines: %*ld | first: %*ld | second: %*ld]"};
 
     long last = State.firstToDraw + songListSubWin->_maxy + 1;
-        // long diff = last - size;
-        // if (State.firstToDraw - diff <= 0) {
-            // State.firstToDraw -= diff;
-            // last = size;
-            // Printe("HERE?\n");
-        // }
-    // }
 
     /* pressing j */
     if (State.goDown && State.inQSelected >= (last - State.scrolloff)) {
@@ -227,7 +212,6 @@ void
 PrintCharDebug(char c)
 {
     std::lock_guard pl(printMtx);
-
 
     std::string_view fmt {"pressed: %c(%d)"};
     move(stdscr->_maxy, (stdscr->_maxx - fmt.size()));

@@ -15,6 +15,14 @@ void PrintSongList();
 void RefreshWindows();
 void PrintSongName();
 
+enum Clr : int {
+    greenBlack = 1,
+    yellowBlack = 2,
+    blueBlack = 3,
+    cyanBlack = 4,
+    redBlack = 5
+};
+
 namespace g {
     extern unsigned sampleRate;
     extern unsigned channels;
@@ -24,6 +32,7 @@ namespace g {
 
     extern unsigned step;
 }
+
 
 struct state {
     f64 volume = 1.002f;
