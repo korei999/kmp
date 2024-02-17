@@ -363,6 +363,7 @@ main(int argc, char* argv[])
     curs_set(0);
     noecho();
     cbreak();
+    keypad(stdscr,TRUE);
     refresh();
 
     init_pair(1, COLOR_GREEN, COLOR_BLACK);

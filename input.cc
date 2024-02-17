@@ -10,7 +10,8 @@ GetString(size_t maxlen)
     echo();
 
     int ch = wgetch(bottomRow);
-    while (ch != '\n') {
+    size_t count {};
+    while (ch != '\n' && count++ < maxlen) {
         input.push_back( ch );
         ch = wgetch(bottomRow);
     }
@@ -22,7 +23,7 @@ GetString(size_t maxlen)
 void
 ReadInput()
 {
-    char c;
+    int c;
     bool volume_changed = false;
     bool lockChanged = false;
     long size = State.songList.size();
@@ -114,6 +115,7 @@ ReadInput()
                 break;
 
             case 4: /* C-d */
+            case KEY_NPAGE:
                 State.inQSelected += 22;
                 State.firstToDraw += 22;
 
@@ -127,6 +129,7 @@ ReadInput()
                 PrintSongList();
                 break;
             case 21: /* C-u */
+            case KEY_PPAGE:
                 State.inQSelected -= 22;
                 State.firstToDraw -= 22;
 
@@ -180,6 +183,13 @@ ReadInput()
                 break;
             case 'N':
                 MoveToFound(SeachNP::backwards);
+                PrintSongList();
+                break;
+
+            case KEY_RESIZE:
+                PrintSongName();
+                PrintVolume();
+                RefreshWindows();
                 PrintSongList();
                 break;
 
