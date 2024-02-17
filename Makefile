@@ -51,7 +51,10 @@ install: $(EXEC)
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/$(BIN)
 
-.PHONY: clean
+.PHONY: clean tags
 
 clean:
 	rm -rf $(BD)
+
+tags:
+	ctags -R --language-force=C++ --extras=+q+r --c++-kinds=+p+l+x+L+A+N+U+Z

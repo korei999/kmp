@@ -16,6 +16,7 @@ void RefreshWindows();
 void PrintSongName();
 
 enum Clr : int {
+    termdef = -1, /* -1 should preserve terminal default color due to use_default_colors() */  
     green = 1,
     yellow = 2,
     blue = 3,

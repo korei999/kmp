@@ -367,11 +367,12 @@ main(int argc, char* argv[])
     refresh();
 
     /* -1 is transparency */
-    init_pair(Clr::green, COLOR_GREEN, -1);
-    init_pair(Clr::yellow, COLOR_YELLOW, -1);
-    init_pair(Clr::blue, COLOR_BLUE, -1);
-    init_pair(Clr::cyan, COLOR_CYAN, -1);
-    init_pair(Clr::red, COLOR_RED, -1);
+    int td = (int)Clr::termdef;
+    init_pair(Clr::green, COLOR_GREEN, td);
+    init_pair(Clr::yellow, COLOR_YELLOW, td);
+    init_pair(Clr::blue, COLOR_BLUE, td);
+    init_pair(Clr::cyan, COLOR_CYAN, td);
+    init_pair(Clr::red, COLOR_RED, td);
 
     /* TODO: hardcoded numbers */
     songListWin = newwin(stdscr->_maxy - 6, stdscr->_maxx, 6, 0);
