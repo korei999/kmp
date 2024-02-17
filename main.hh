@@ -16,11 +16,11 @@ void RefreshWindows();
 void PrintSongName();
 
 enum Clr : int {
-    greenBlack = 1,
-    yellowBlack = 2,
-    blueBlack = 3,
-    cyanBlack = 4,
-    redBlack = 5
+    green = 1,
+    yellow = 2,
+    blue = 3,
+    cyan = 4,
+    red = 5
 };
 
 namespace g {

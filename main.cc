@@ -73,9 +73,9 @@ PrintVolume()
     move(1, 0);
     clrtoeol();
 
-    attron(A_BOLD | COLOR_PAIR(Clr::greenBlack));
+    attron(A_BOLD | COLOR_PAIR(Clr::green));
     printw(volfmt, frac / 2);
-    attroff(A_BOLD | COLOR_PAIR(Clr::greenBlack));
+    attroff(A_BOLD | COLOR_PAIR(Clr::green));
     refresh();
 }
 
@@ -105,12 +105,12 @@ PrintSongListInRange(long first, long last)
             wclrtoeol(songListSubWin);
 
             if (sel == State.inQ)
-                wattron(songListSubWin, COLOR_PAIR(Clr::yellowBlack));
+                wattron(songListSubWin, COLOR_PAIR(Clr::yellow));
             if (sel == State.inQSelected)
                 wattron(songListSubWin, A_REVERSE);
 
             mvwprintw(songListSubWin, i, 1, "%.*s",  songListSubWin->_maxx - 2, delpath.data());
-            wattroff(songListSubWin, A_REVERSE | COLOR_PAIR(Clr::yellowBlack));
+            wattroff(songListSubWin, A_REVERSE | COLOR_PAIR(Clr::yellow));
         } else {
             wmove(songListSubWin, i, 0);
             wclrtoeol(songListSubWin);
@@ -185,10 +185,10 @@ PrintSongName()
 
     move(5, 0);
     clrtoeol();
-    attron(A_BOLD | COLOR_PAIR(Clr::yellowBlack));
+    attron(A_BOLD | COLOR_PAIR(Clr::yellow));
     printw("%s", State.songList[State.inQ].data()); 
 
-    attroff(A_BOLD | COLOR_PAIR(Clr::yellowBlack));
+    attroff(A_BOLD | COLOR_PAIR(Clr::yellow));
 
     refresh();
 }
@@ -366,11 +366,12 @@ main(int argc, char* argv[])
     keypad(stdscr,TRUE);
     refresh();
 
-    init_pair(1, COLOR_GREEN, COLOR_BLACK);
-    init_pair(2, COLOR_YELLOW, COLOR_BLACK);
-    init_pair(3, COLOR_BLUE, COLOR_BLACK);
-    init_pair(4, COLOR_CYAN, COLOR_BLACK);
-    init_pair(5, COLOR_RED, COLOR_BLACK);
+    /* -1 is transparency */
+    init_pair(Clr::green, COLOR_GREEN, -1);
+    init_pair(Clr::yellow, COLOR_YELLOW, -1);
+    init_pair(Clr::blue, COLOR_BLUE, -1);
+    init_pair(Clr::cyan, COLOR_CYAN, -1);
+    init_pair(Clr::red, COLOR_RED, -1);
 
     /* TODO: hardcoded numbers */
     songListWin = newwin(stdscr->_maxy - 6, stdscr->_maxx, 6, 0);
