@@ -12,7 +12,7 @@ GetString(size_t maxlen)
     int ch = wgetch(bottomRow);
     size_t count {};
     while (ch != '\n' && count++ < maxlen) {
-        input.push_back( ch );
+        input.push_back(ch);
         ch = wgetch(bottomRow);
     }
 
@@ -26,7 +26,6 @@ ReadInput()
     int c;
     bool volume_changed = false;
     bool lockChanged = false;
-    long size = State.songList.size();
 
     size_t maxlen {};
 
@@ -86,8 +85,8 @@ ReadInput()
                 State.goDown = true;
                 State.inQSelected++;
 
-                if (State.inQSelected > size - 1)
-                    State.inQSelected = size - 1;
+                if (State.inQSelected > State.Size() - 1)
+                    State.inQSelected = State.Size() - 1;
 
                 PrintSongList();
                 break;
@@ -108,8 +107,8 @@ ReadInput()
                 PrintSongList();
                 break;
             case 'G':
-                State.inQSelected = size - 1;
-                State.firstToDraw = (size - 1) - songListSubWin->_maxy;
+                State.inQSelected = State.Size() - 1;
+                State.firstToDraw = (State.Size() - 1) - songListSubWin->_maxy;
 
                 PrintSongList();
                 break;
@@ -119,11 +118,11 @@ ReadInput()
                 State.inQSelected += 22;
                 State.firstToDraw += 22;
 
-                if (State.firstToDraw > size) {
-                    State.firstToDraw = (size - 1) - songListSubWin->_maxy;
+                if (State.firstToDraw > State.Size()) {
+                    State.firstToDraw = (State.Size() - 1) - songListSubWin->_maxy;
                 }
-                if (State.inQSelected >= size) {
-                    State.inQSelected = size - 1;
+                if (State.inQSelected >= State.Size()) {
+                    State.inQSelected = State.Size() - 1;
                 }
 
                 PrintSongList();

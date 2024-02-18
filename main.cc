@@ -200,6 +200,7 @@ RefreshWindows()
 
     wresize(songListWin, stdscr->_maxy - 6, stdscr->_maxx);
     wresize(songListSubWin, songListWin->_maxy - 1, songListWin->_maxx - 1);
+    mvwin(bottomRow, stdscr->_maxy, 0);
 
     box(songListWin, 0, 0);
     move(stdscr->_maxy, 0);
