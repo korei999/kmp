@@ -4,23 +4,21 @@
 #include "search.hh"
 
 std::string
-GetString(size_t maxlen)
+GetString(size_t maxlen, bool forward)
 {
     State.searching = true;
+    std::lock_guard lock(printMtx);
+
+    forward ? waddch(bottomRow, '/') : waddch(bottomRow, '?');
+    wrefresh(bottomRow);
+
+    char buffer[50] {};
     echo();
-
-    std::string input;
-
-    int ch = wgetch(bottomRow);
-    size_t count = 0;
-    while (ch != '\n' && count++ < maxlen) {
-        input.push_back(ch);
-        ch = wgetch(bottomRow);
-    }
-
+    wgetnstr(bottomRow, buffer, length(buffer) - 1);
     noecho();
+
     State.searching = false;
-    return input;
+    return std::string(buffer);
 }
 
 void
@@ -158,7 +156,7 @@ ReadInput()
             case 47: /* / */
                 maxlen = std::max(size_t(length(sbuff) - 1), size_t(bottomRow->_maxx - 1));
 
-                SubstringSearch(GetString(maxlen), true);
+                SubstringSearch(GetString(maxlen, true), true);
 
                 MoveToFound(SeachNP::nochange);
                 PrintSongList();
@@ -170,7 +168,7 @@ ReadInput()
             case 63: /* ? */
                 maxlen = std::max(size_t(length(sbuff) - 1), size_t(bottomRow->_maxx - 1));
 
-                SubstringSearch(GetString(maxlen), false);
+                SubstringSearch(GetString(maxlen, false), false);
 
                 MoveToFound(SeachNP::nochange);
                 PrintSongList();
@@ -222,3 +220,17 @@ ReadInput()
         }
     }
 }
+
+#ifdef DEBUG
+void
+PrintCharDebug(char c)
+{
+    std::lock_guard pl(printMtx);
+
+    std::string_view fmt {"pressed: %c(%d)"};
+    move(stdscr->_maxy, (stdscr->_maxx - fmt.size()));
+    clrtoeol();
+    printw(fmt.data(), c, c);
+    mvprintw(stdscr->_maxy, 0, "size: %lu", State.songList.size());
+}
+#endif

@@ -199,20 +199,6 @@ RefreshWindows()
     wrefresh(songListWin);
 }
 
-#ifdef DEBUG
-void
-PrintCharDebug(char c)
-{
-    std::lock_guard pl(printMtx);
-
-    std::string_view fmt {"pressed: %c(%d)"};
-    move(stdscr->_maxy, (stdscr->_maxx - fmt.size()));
-    clrtoeol();
-    printw(fmt.data(), c, c);
-    mvprintw(stdscr->_maxy, 0, "size: %lu", State.songList.size());
-}
-#endif
-
 void
 OpusPlay(const std::string_view s)
 {
@@ -367,7 +353,8 @@ main(int argc, char* argv[])
     curs_set(0);
     noecho();
     cbreak();
-    keypad(stdscr,TRUE);
+    keypad(stdscr, true);
+    keypad(bottomRow, true);
     refresh();
 
     /* -1 is transparency */

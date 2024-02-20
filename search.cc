@@ -2,20 +2,23 @@
 #include "search.hh"
 
 std::vector<long> searchIndices {};
-long searchTarget {-1};
+long searchTarget = -1;
 
 // size_t h {std::hash<std::string_view>{}(s)};
 
 void
 SubstringSearch(const std::string_view s, bool forward)
 {
-    bool found {false};
+    if (s.empty())
+        return;
+
+    bool found = false;
     searchIndices.clear();
     searchTarget = -1;
 
     if (forward)
     {
-        for (size_t i = 0; i < State.songList.size(); i++)
+        for (long i = 0; i < State.Size(); i++)
         {
             auto e = State.songList[i];
             std::string delpath {e.substr(e.find_last_of("/") + 1, e.size())};
@@ -29,7 +32,7 @@ SubstringSearch(const std::string_view s, bool forward)
     }
     else
     {
-        for (long i = State.songList.size() - 1; i >= 0; i--)
+        for (long i = State.Size() - 1; i >= 0; i--)
         {
             auto e = State.songList[i];
             std::string delpath {e.substr(e.find_last_of("/") + 1, e.size())};

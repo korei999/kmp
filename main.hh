@@ -10,7 +10,6 @@
 
 /* Printing to ncurses screen is not thread safe, use global printMtx mutex lock */
 void PrintVolume();
-void PrintCharDebug(char c);
 void PrintSongList();
 void RefreshWindows();
 void PrintSongName();

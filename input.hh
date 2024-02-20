@@ -1,7 +1,8 @@
 #pragma once
 #include <string>
 
+std::string GetString(size_t maxlen, bool forward);
 void ReadInput();
-std::string GetString(size_t maxlen);
+void PrintCharDebug(char c);
 
 extern char sbuff[255];
