@@ -15,7 +15,8 @@ void PrintSongList();
 void RefreshWindows();
 void PrintSongName();
 
-enum Clr : int {
+enum Clr : int
+{
     termdef = -1, /* -1 should preserve terminal default color due to use_default_colors() */
     green = 1,
     yellow = 2,
@@ -24,21 +25,25 @@ enum Clr : int {
     red = 5
 };
 
-namespace g {
-    extern unsigned sampleRate;
-    extern unsigned channels;
+namespace g
+{
 
-    extern unsigned bufferTime;       /* ring buffer length in us */
-    extern unsigned periodTime;       /* period time in us */
+extern unsigned sampleRate;
+extern unsigned channels;
 
-    extern unsigned step;
+extern unsigned bufferTime; /* ring buffer length in us */
+extern unsigned periodTime; /* period time in us */
+
+extern unsigned step;
+
 }
 
 
-struct state {
-    f64 volume = 1.002f;
+struct state
+{
+    f64 volume = 1.005f;
     f64 minVolume = 1.000f;
-    f64 maxVolume = 1.201f;
+    f64 maxVolume = 1.350f;
 
     bool paused = false;
     bool exit = false;
@@ -52,6 +57,7 @@ struct state {
     bool right = false;
 
     bool pressedEnter = false;
+    bool searching = false;
 
     std::vector<std::string_view> songList {};
     long scrolloff = 0;

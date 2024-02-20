@@ -6,7 +6,8 @@
 
 pointer<s16> WavLoad(const std::string_view path, size_t idk);
 
-struct WavFile {
+struct WavFile
+{
     pointer<s16> ptr;
     unsigned sample_rate;
     unsigned period_time;
@@ -21,10 +22,11 @@ struct WavFile {
     void load_wav(std::string_view path);
 };
 
-#define RIFF_CODE(a, b, c, d) ( (((u32)a) << 0) | (((u32)b) << 8) | (((u32)c) << 16) | (((u32)d) << 24) )
+#define RIFF_CODE(a, b, c, d) ((((u32)a) << 0) | (((u32)b) << 8) | (((u32)c) << 16) | (((u32)d) << 24))
 
-enum : u32 {
-    wave_chunk_id_fmt = RIFF_CODE('f', 'm', 't', ' '),
+enum : u32
+{
+    wave_chunk_id_fmt  = RIFF_CODE('f', 'm', 't', ' '),
     wave_chunk_id_data = RIFF_CODE('d', 'a', 't', 'a'),
     wave_chunk_id_riff = RIFF_CODE('R', 'I', 'F', 'F'),
     wave_chunk_id_wave = RIFF_CODE('W', 'A', 'V', 'E')

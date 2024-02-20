@@ -13,17 +13,21 @@
 #include <thread>
 
 /* gloabls */
-namespace g {
-    unsigned sampleRate = 48000;
-    unsigned channels = 2;
+namespace g
+{
 
-    unsigned bufferTime = 250'000;       /* ring buffer length in us */ /* 500'000 us == 0.5 s */
-    unsigned periodTime = 100'000;       /* period time in us */
+unsigned sampleRate = 48000;
+unsigned channels = 2;
 
-    unsigned step = 200;
-}
+unsigned bufferTime = 250'000; /* ring buffer length in us */ /* 500'000 us == 0.5 s */
+unsigned periodTime = 100'000;                                /* period time in us */
 
-state State {
+unsigned step = 200;
+
+} // namespace g
+
+state State
+{
     .volume = 1.010f,
     .minVolume = 1.000f,
     .maxVolume = 1.261f,
@@ -86,18 +90,22 @@ PrintSongListInRange(long first, long last)
     long maxlines = songListSubWin->_maxy + 1;
     long size = State.songList.size();
 
-    if (size < maxlines) {
+    if (size < maxlines)
+    {
         first = 0;
         last = size;
-    } else if (last > size && (size - maxlines) >= 0) {
+    } 
+    else if (last > size && (size - maxlines) >= 0)
+    {
         first = size - maxlines;
         last = size;
     }
 
-    for (long i = 0; i < last; i++) {
+    for (long i = 0; i < last; i++)
+    {
         long sel = i + first;
-
-        if (sel < size) {
+        if (sel < size)
+        {
             std::string delpath {State.songList[sel]};
             delpath = delpath.substr(delpath.find_last_of("/") + 1, delpath.size());
 
@@ -111,7 +119,9 @@ PrintSongListInRange(long first, long last)
 
             mvwprintw(songListSubWin, i, 1, "%.*s",  songListSubWin->_maxx - 2, delpath.data());
             wattroff(songListSubWin, A_REVERSE | COLOR_PAIR(Clr::yellow));
-        } else {
+        }
+        else
+        {
             wmove(songListSubWin, i, 0);
             wclrtoeol(songListSubWin);
         }
@@ -132,7 +142,8 @@ PrintSongList()
     long last = State.firstToDraw + songListSubWin->_maxy + 1;
 
     /* pressing j */
-    if (State.goDown && State.inQSelected >= (last - State.scrolloff)) {
+    if (State.goDown && State.inQSelected >= (last - State.scrolloff))
+    {
         State.goDown = false;
 
         if (State.inQSelected < (size - State.scrolloff))
@@ -140,7 +151,8 @@ PrintSongList()
     }
 
     /* pressing k */
-    if (State.goUp && State.inQSelected < (State.firstToDraw + State.scrolloff)) {
+    if (State.goUp && State.inQSelected < (State.firstToDraw + State.scrolloff))
+    {
         State.goUp = false;
 
         if (State.inQSelected >= State.scrolloff)
@@ -148,30 +160,6 @@ PrintSongList()
     }
 
     PrintSongListInRange(State.firstToDraw, last);
-
-// #ifdef DEBUG
-    // long max = State.songList.size();
-    // long first = 0 + State.firstToDraw;
-    // // long second = State.lastToDraw;
-    // long second = last;
-
-    // mvwprintw(songListSubWin,
-            // 0,
-            // songListSubWin->_maxx - selfmt.size(),
-            // selfmt.data(),
-            // maxNumLen,
-            // State.inQSelected,
-            // maxNumLen,
-            // State.inQ,
-            // maxNumLen,
-            // songListSubWin->_maxy,
-            // maxNumLen,
-            // State.firstToDraw,
-            // maxNumLen,
-            // State.lastToDraw);
-
-    // wrefresh(songListSubWin);
-// #endif
 }
 
 void
@@ -181,7 +169,10 @@ PrintSongName()
 
     move(4, 0);
     clrtoeol();
-    printw("%lu / %lu playing:", State.inQ + 1, State.songList.size());
+    if (!State.repeatOnEnd)
+        printw("%lu / %lu playing:    ", State.inQ + 1, State.songList.size());
+    else
+        printw("%lu / %lu playing: (R)", State.inQ + 1, State.songList.size());
 
     move(5, 0);
     clrtoeol();
@@ -248,16 +239,18 @@ OpusPlay(const std::string_view s)
 
     s16* chunk = new s16[ChunkSize];
 
-    if (parser) {
+    if (parser)
+    {
         int err;
         long counter = 0;
         f64 rampVol = 0;
-        while ((err = op_read_stereo(parser, chunk, p.periodTime) > 0)) {
-            if (State.exit) {
+        while ((err = op_read_stereo(parser, chunk, p.periodTime) > 0))
+        {
+            if (State.exit)
                 break;
-            }
 
-            if (!err) {
+            if (!err)
+            {
                 // ...
                 std::lock_guard pl(printMtx);
                 mvprintw(0, stdscr->_maxx >> 1, "some error...\n");
@@ -265,7 +258,10 @@ OpusPlay(const std::string_view s)
             
             u64 now = op_pcm_tell(parser);
 
-            if (State.paused) {
+            if (State.paused)
+            {
+                // std::thread print(PrintMinSec, now / p.sampleRate, lengthInS);
+                // print.detach();
                 PrintMinSec(now / p.sampleRate, lengthInS);
 
                 p.Pause();
@@ -276,23 +272,25 @@ OpusPlay(const std::string_view s)
                 p.Resume();
             }
 
-            if (State.pressedEnter) {
+            if (State.pressedEnter)
                 break;
-            }
 
-            if (State.right) {
+            if (State.right)
+            {
                 op_pcm_seek(parser, now + p.periodTime * g::step);
                 State.right = false;
                 continue;
             }
 
-            if (State.left) {
+            if (State.left)
+            {
                 op_pcm_seek(parser, now - p.periodTime * g::step);
                 State.left = false;
                 continue;
             }
 
-            if (State.next || State.repeatOnEnd) {
+            if (State.next)
+            {
                 if (State.next)
                     State.inQ++;
 
@@ -302,7 +300,8 @@ OpusPlay(const std::string_view s)
                 break;
             }
 
-            if (State.prev) {
+            if (State.prev)
+            {
                 State.inQ--;
 
                 if (State.inQ < 0)
@@ -311,7 +310,8 @@ OpusPlay(const std::string_view s)
                 break;
             }
 
-            if (counter++ % 50) {
+            if (counter++ % 50 && !State.searching)
+            {
                 now = op_pcm_tell(parser);
                 PrintMinSec(now / p.sampleRate, lengthInS);
             }
@@ -320,17 +320,20 @@ OpusPlay(const std::string_view s)
             f64 vol = LinearToDB(State.volume);
             
             /* minimize crack at the very beggining of playback */
-            if (rampVol <= 1.0) {
+            if (rampVol <= 1.0)
+            {
                 vol *= rampVol;
                 rampVol += 0.03; /* 34 increments */
             }
 
-            for (size_t i = 0; i < p.periodTime; i += 2) { /* 2 channels hardcoded */
+            for (size_t i = 0; i < p.periodTime; i += 2) /* 2 channels hardcoded */
+            {
                 chunk[i    ] *= vol; /* right */
                 chunk[i + 1] *= vol; /* left */
             }
 
-            if (p.Play(chunk, ChunkSize) == -1) {
+            if (p.Play(chunk, ChunkSize) == -1)
+            {
                 std::lock_guard pl(printMtx);
                 mvprintw(0, stdscr->_maxx >> 1, "playback error\n");
                 break;
@@ -390,33 +393,44 @@ main(int argc, char* argv[])
     wrefresh(songListWin);
 
     std::thread input(ReadInput);
+    input.detach();
 
-    for (long i = 1; i < argc; i++) {
-
+    for (long i = 1; i < argc; i++)
+    {
         std::string_view songName = argv[i];
         if (songName.ends_with(".opus")) {
             State.songList.push_back(songName);
         }
     }
 
-    long size = State.songList.size();
-    while (State.inQ < size) {
+    long size = State.Size();
+    while (State.inQ < size)
+    {
         if (State.exit)
             break;
 
         OpusPlay(State.songList[State.inQ]);
-        if (State.prev) {
+        if (State.prev)
+        {
             State.prev = false;
             continue;
         }
 
-        if (State.next) {
+        if (State.next)
+        {
             State.next = false;
             continue;
         }
 
-        if (State.pressedEnter) {
+        if (State.pressedEnter)
+        {
             State.pressedEnter = false;
+            continue;
+        }
+
+        if (State.repeatOnEnd && State.inQ == size - 1)
+        {
+            State.inQ = 0;
             continue;
         }
 
@@ -426,6 +440,5 @@ main(int argc, char* argv[])
     delwin(songListSubWin);
     delwin(songListWin);
     endwin();
-    input.join();
     return 0;
 }

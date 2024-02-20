@@ -6,17 +6,20 @@
 std::string
 GetString(size_t maxlen)
 {
-    std::string input;
+    State.searching = true;
     echo();
 
+    std::string input;
+
     int ch = wgetch(bottomRow);
-    size_t count {};
+    size_t count = 0;
     while (ch != '\n' && count++ < maxlen) {
         input.push_back(ch);
         ch = wgetch(bottomRow);
     }
 
     noecho();
+    State.searching = false;
     return input;
 }
 
@@ -27,10 +30,12 @@ ReadInput()
     bool volume_changed = false;
     bool lockChanged = false;
 
-    size_t maxlen {};
+    size_t maxlen = 0;
 
-    while ( (c = getch()) ) {
-        switch (c) {
+    while ( (c = getch()) )
+    {
+        switch (c)
+        {
             case 'q':
                 State.exit = true;
 
@@ -118,12 +123,10 @@ ReadInput()
                 State.inQSelected += 22;
                 State.firstToDraw += 22;
 
-                if (State.firstToDraw > State.Size()) {
+                if (State.firstToDraw > State.Size())
                     State.firstToDraw = (State.Size() - 1) - songListSubWin->_maxy;
-                }
-                if (State.inQSelected >= State.Size()) {
+                if (State.inQSelected >= State.Size())
                     State.inQSelected = State.Size() - 1;
-                }
 
                 PrintSongList();
                 break;
@@ -185,6 +188,11 @@ ReadInput()
                 PrintSongList();
                 break;
 
+            case 'r':
+                State.repeatOnEnd = !State.repeatOnEnd;
+                PrintSongName();
+                break;
+
             case KEY_RESIZE:
                 PrintSongName();
                 PrintVolume();
@@ -201,12 +209,14 @@ ReadInput()
 
         State.volume = Clamp(State.volume, State.minVolume, State.maxVolume);
 
-        if (volume_changed) {
+        if (volume_changed)
+        {
             volume_changed = false;
             PrintVolume();
         }
 
-        if (lockChanged && !State.paused) {
+        if (lockChanged && !State.paused)
+        {
             lockChanged = false;
             playCnd.notify_one();
         }

@@ -2,7 +2,8 @@
 #include <string_view>
 #include <vector>
 
-enum class SeachNP : int {
+enum class SeachNP : int
+{
     backwards = -1,
     nochange = 0,
     forward = 1

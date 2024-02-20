@@ -11,11 +11,12 @@
 #define Printf std::cout << std::format
 #define Printe std::cerr << std::format
 
-#define Die(...)                                            \
-    do {                                                    \
-        (void)printf("DIED: %s(%u): ", __FILE__, __LINE__); \
-        (void)printf(__VA_ARGS__);                          \
-        endwin();                                           \
+#define Die(...)                                                                                                       \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        (void)printf("DIED: %s(%u): ", __FILE__, __LINE__);                                                            \
+        (void)printf(__VA_ARGS__);                                                                                     \
+        endwin();                                                                                                      \
     } while (0)
 
 #define length(a) (sizeof(a) / sizeof(a[0]))
@@ -41,7 +42,8 @@ Clamp(T& value, T& min, T& max)
 }
 
 template <class T>
-struct pointer {
+struct pointer
+{
     T* data;
     size_t size;
 
