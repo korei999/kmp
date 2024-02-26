@@ -5,15 +5,13 @@ include dbg.mk
 CC := clang++ -fcolor-diagnostics -fansi-escape-codes -stdlib=libc++
 WARNING := -Wall -Wextra -Wpedantic
 
-OPUS := $(shell pkg-config --cflags opusfile opus)
-OPUS_LIB := $(shell pkg-config --libs opus opusfile)
+PGKS := alsa opusfile opus ncursesw
+PKG := $(shell pkg-config --cflags $(PGKS))
+PKG_LIB := $(shell pkg-config --libs $(PGKS))
 
-NCURSES := $(shell pkg-config --cflags ncursesw)
-NCURSES_LIB := $(shell pkg-config --libs ncursesw)
-
-CFLAGS := -std=c++23 -pipe $(OPUS) $(NCURSES)
+CFLAGS := -std=c++23 -pipe $(PKG)
 LDFLAGS := -fuse-ld=lld
-LDFLAGS += -lasound -lm $(OPUS_LIB) $(NCURSES_LIB)
+LDFLAGS += -lasound -lm $(PKG_LIB)
 
 SRCD := .
 BD := ./build
