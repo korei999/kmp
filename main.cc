@@ -304,12 +304,12 @@ OpusPlay(const std::string_view s)
 
             /* modify chunk */
             f64 vol = LinearToDB(State.volume);
-            
+
             /* minimize crack at the very beggining of playback */
             if (rampVol <= 1.0)
             {
                 vol *= rampVol;
-                rampVol += 0.03; /* 34 increments */
+                rampVol += 0.1;
             }
 
             for (size_t i = 0; i < p.periodTime; i += 2) /* 2 channels hardcoded */
@@ -320,8 +320,7 @@ OpusPlay(const std::string_view s)
 
             if (p.Play(chunk, ChunkSize) == -1)
             {
-                std::lock_guard pl(printMtx);
-                mvprintw(0, stdscr->_maxx >> 1, "playback error\n");
+                Die("playback error\n");
                 break;
             }
         }
@@ -357,7 +356,7 @@ main(int argc, char* argv[])
     keypad(bottomRow, true);
     refresh();
 
-    /* -1 is transparency */
+    /* -1 to preserve default */
     int td = (int)Clr::termdef;
     init_pair(Clr::green, COLOR_GREEN, td);
     init_pair(Clr::yellow, COLOR_YELLOW, td);
