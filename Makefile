@@ -2,7 +2,7 @@ MAKEFLAGS := --jobs=$(shell nproc) --output-sync=target
 
 include dbg.mk
 
-CC := g++ -fdiagnostics-color=always
+CC := clang++ -fcolor-diagnostics -fansi-escape-codes -stdlib=libc++
 WARNING := -Wall -Wextra -Wpedantic
 
 OPUS := $(shell pkg-config --cflags opusfile opus)
@@ -12,7 +12,8 @@ NCURSES := $(shell pkg-config --cflags ncursesw)
 NCURSES_LIB := $(shell pkg-config --libs ncursesw)
 
 CFLAGS := -std=c++23 -pipe $(OPUS) $(NCURSES)
-LDFLAGS := -lasound -lm $(OPUS_LIB) $(NCURSES_LIB)
+LDFLAGS := -fuse-ld=lld
+LDFLAGS += -lasound -lm $(OPUS_LIB) $(NCURSES_LIB)
 
 SRCD := .
 BD := ./build
@@ -23,7 +24,7 @@ SRCS := $(shell find $(SRCD) -name '*.cc')
 OBJ := $(SRCS:%=$(BD)/%.o)
 
 # release build
-all: CC += -flto=auto $(SAFE_STACK) 
+all: CC += -flto=thin $(SAFE_STACK) 
 all: CFLAGS += -g -O3 -march=sandybridge $(WARNING) -DNDEBUG
 all: $(EXEC)
 
