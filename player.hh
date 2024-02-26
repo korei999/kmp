@@ -40,7 +40,6 @@ struct alsa
 
     // s16* chunk;
     std::vector<s16> chunk;
-    u32 chunk_size;
     long pcmtotal;
     u64 now;
 
@@ -61,7 +60,7 @@ struct alsa
 
     void print();
 
-    int play();
+    int play_chunk();
     void resume();
     void pause();
     void left();

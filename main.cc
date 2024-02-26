@@ -85,7 +85,7 @@ print_volume()
 
 inline static
 void
-PrintSongListInRange(long first, long last)
+print_song_list_in_range(long first, long last)
 {
     long maxlines = song_list_sub_win->_maxy + 1;
     long size = state.song_list.size();
@@ -137,7 +137,7 @@ print_song_list()
 
     long size = state.song_list.size();
     int maxNumLen = std::to_string(size).size();
-    std::string_view selfmt {"inQSelected: %*ld | inQ: %*ld | maxlines: %*ld | first: %*ld | second: %*ld]"};
+    // std::string_view selfmt {"inQSelected: %*ld | inQ: %*ld | maxlines: %*ld | first: %*ld | second: %*ld]"};
 
     long last = state.first_to_draw + song_list_sub_win->_maxy + 1;
 
@@ -159,7 +159,7 @@ print_song_list()
             state.first_to_draw--;
     }
 
-    PrintSongListInRange(state.first_to_draw, last);
+    print_song_list_in_range(state.first_to_draw, last);
 }
 
 void
@@ -304,7 +304,7 @@ play_file(const std::string_view s)
             // Printe("{}, {}\n", p.chunk[i], p.chunk[i + 1]);
         }
 
-        if (p.play() == -1)
+        if (p.play_chunk() == -1)
         {
             Die("playback error\n");
             break;
