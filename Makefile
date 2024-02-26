@@ -10,8 +10,7 @@ PKG := $(shell pkg-config --cflags $(PGKS))
 PKG_LIB := $(shell pkg-config --libs $(PGKS))
 
 CFLAGS := -std=c++23 -pipe $(PKG)
-LDFLAGS := -fuse-ld=lld
-LDFLAGS += -lasound -lm $(PKG_LIB)
+LDFLAGS := -lasound -lm $(PKG_LIB)
 
 SRCD := .
 BD := ./build
@@ -24,12 +23,19 @@ OBJ := $(SRCS:%=$(BD)/%.o)
 # release build
 all: CC += -flto=thin $(SAFE_STACK) 
 all: CFLAGS += -g -O3 -march=sandybridge $(WARNING) -DNDEBUG
+all: LDFLAGS += -fuse-ld=lld
 all: $(EXEC)
 
 # debug build
 debug: CC += $(ASAN)
 debug: CFLAGS += -O0 $(DEBUG) $(WARNING) $(WNO)
+debug: LDFLAGS += -fuse-ld=lld
 debug: $(EXEC)
+
+# build with gcc
+gcc: CC := g++ -fdiagnostics-color=always
+gcc: CFLAGS += -g -O3 -march=sandybridge $(WARNING) -DNDEBUG
+gcc: $(EXEC)
 
 # rules to build everything
 $(EXEC): $(OBJ)
