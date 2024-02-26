@@ -2,15 +2,15 @@
 #include <string_view>
 #include <vector>
 
-enum class SeachNP : int
+enum class seach_np : int
 {
     backwards = -1,
     nochange = 0,
     forward = 1
 };
 
-void LogHash(const std::string_view s);
-void SubstringSearch(const std::string_view s, bool forward);
-void MoveToFound(SeachNP val);
+void log_hash(const std::string_view s);
+void substring_search(const std::string_view s, bool forward);
+void move_to_found(seach_np val);
 
-extern std::vector<long> searchIndices;
+extern std::vector<long> search_indices;

@@ -43,7 +43,6 @@ $(BD)/%.cc.o: %.cc Makefile dbg.mk *.hh
 PREFIX = /usr/local
 
 install: $(EXEC)
-	strip $(EXEC)
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp -f $(EXEC) $(DESTDIR)$(PREFIX)/bin
 	chmod 755 $(DESTDIR)$(PREFIX)/bin/$(BIN)

@@ -4,51 +4,51 @@
 #include <vector>
 
 pointer<s16>
-WavLoad(const std::string_view path, size_t align)
+wav_load(const std::string_view path, size_t align)
 {
     return file_load<s16>(path, align);
 }
 
-WavFile::WavFile(const std::string_view path, size_t allign) : ptr {WavLoad(path, allign)}
+wav_file::wav_file(const std::string_view path, size_t allign) : ptr {wav_load(path, allign)}
 {
 }
 
-WavFile::~WavFile()
+wav_file::~wav_file()
 {
     delete[] this->ptr.data;
 }
 
 void
-WavFile::play(snd_pcm_t* pcm)
+wav_file::play(snd_pcm_t* pcm)
 {
     s16* samples = this->data();
     long file_size = this->size();
 
     size_t sample_count = file_size / sizeof(s16);
 
-    std::vector<s16> chunk(g::periodTime);
-    chunk.reserve(g::periodTime);
+    std::vector<s16> chunk(g::period_time);
+    chunk.reserve(g::period_time);
 
-    for (long offset = 0; offset < file_size; offset += g::periodTime)
+    for (long offset = 0; offset < file_size; offset += g::period_time)
     {
-        if (State.next || State.exit)
+        if (state.next || state.exit)
         {
-            State.next = State.exit = false;
+            state.next = state.exit = false;
             return;
         }
-        memcpy(chunk.data(), samples + offset, sizeof(s16) * g::periodTime);
+        memcpy(chunk.data(), samples + offset, sizeof(s16) * g::period_time);
 
-        for (size_t i = 0; i < g::periodTime; i++)
+        for (size_t i = 0; i < g::period_time; i++)
         {
-            chunk[i] *= State.volume;
+            chunk[i] *= state.volume;
         }
 
-        snd_pcm_writei(pcm, chunk.data(), g::periodTime / this->channels);
+        snd_pcm_writei(pcm, chunk.data(), g::period_time / this->channels);
     }
 }
 
 void
-WavFile::load_wav(std::string_view path)
+wav_file::load_wav(std::string_view path)
 {
 }
 

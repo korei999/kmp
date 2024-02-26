@@ -2,22 +2,26 @@
 #include "util.hh"
 #include <alsa/asoundlib.h>
 
-#define STRIDE (g::sampleRate * g::channels * sizeof(s16))
+#define STRIDE (g::sample_rate * g::channels * sizeof(s16))
 
-pointer<s16> WavLoad(const std::string_view path, size_t idk);
+pointer<s16> wav_load(const std::string_view path, size_t idk);
 
-struct WavFile
+struct wav_file
 {
-    pointer<s16> ptr;
+    pointer<s16> ptr {};
     unsigned sample_rate;
     unsigned period_time;
     s8 channels;
     f32 volume;
 
-    WavFile(const std::string_view path, size_t allign);
-    ~WavFile();
-    constexpr s16* data() { return ptr.data; }
-    constexpr size_t size() { return ptr.size; }
+    wav_file() = default;
+    wav_file(const std::string_view path, size_t allign);
+
+    ~wav_file();
+
+    s16* data() const { return ptr.data; }
+    size_t size() const { return ptr.size; }
+
     void play(snd_pcm_t* pcm);
     void load_wav(std::string_view path);
 };

@@ -9,10 +9,10 @@
 #include <vector>
 
 /* Printing to ncurses screen is not thread safe, use global printMtx mutex lock */
-void PrintVolume();
-void PrintSongList();
-void RefreshWindows();
-void PrintSongName();
+void print_volume();
+void print_song_list();
+void refresh_windows();
+void print_song_name();
 
 enum Clr : int
 {
@@ -27,22 +27,22 @@ enum Clr : int
 namespace g
 {
 
-extern unsigned sampleRate;
+extern unsigned sample_rate;
 extern unsigned channels;
 
-extern unsigned bufferTime; /* ring buffer length in us */
-extern unsigned periodTime; /* period time in us */
+extern unsigned buffer_time; /* ring buffer length in us */
+extern unsigned period_time; /* period time in us */
 
 extern unsigned step;
 
 }
 
 
-struct state
+struct program_state
 {
     f64 volume = 1.005f;
-    f64 minVolume = 1.000f;
-    f64 maxVolume = 1.350f;
+    f64 min_volume = 1.000f;
+    f64 max_volume = 1.350f;
 
     bool paused = false;
     bool exit = false;
@@ -55,28 +55,29 @@ struct state
     bool left = false;
     bool right = false;
 
-    bool pressedEnter = false;
+    bool pressed_enter = false;
     bool searching = false;
 
-    std::vector<std::string_view> songList {};
+    std::vector<std::string_view> song_list {};
     long scrolloff = 0;
 
     /* first index of song to draw in the list */
-    long firstToDraw = 0;
-    long inQ = 0;
-    long inQSelected = 0;
+    long first_to_draw = 0;
+    long in_q = 0;
+    long in_q_selected = 0;
 
-    bool goDown = 0;
-    bool goUp = 0;
+    bool go_down = 0;
+    bool go_up = 0;
 
-    constexpr long Size() { return songList.size(); }
+    long size() const { return song_list.size(); }
+    const std::string_view song_in_q() const { return song_list[in_q]; }
 };
 
-extern WINDOW* songListWin;
-extern WINDOW* songListSubWin;
-extern WINDOW* bottomRow;
+extern WINDOW* song_list_win;
+extern WINDOW* song_list_sub_win;
+extern WINDOW* bottom_row;
 
-extern state State;
-extern std::mutex printMtx;
-extern std::mutex playMtx;
-extern std::condition_variable playCnd;
+extern program_state state;
+extern std::mutex print_mtx;
+extern std::mutex play_mtx;
+extern std::condition_variable play_cnd;

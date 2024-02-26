@@ -4,29 +4,29 @@
 #include "search.hh"
 
 std::string
-GetString(size_t maxlen, bool forward)
+get_string(size_t maxlen, bool forward)
 {
-    State.searching = true;
-    std::lock_guard lock(printMtx);
+    state.searching = true;
+    std::lock_guard lock(print_mtx);
 
-    forward ? waddch(bottomRow, '/') : waddch(bottomRow, '?');
-    wrefresh(bottomRow);
+    forward ? waddch(bottom_row, '/') : waddch(bottom_row, '?');
+    wrefresh(bottom_row);
 
     char buffer[50] {};
     echo();
-    wgetnstr(bottomRow, buffer, length(buffer) - 1);
+    wgetnstr(bottom_row, buffer, length(buffer) - 1);
     noecho();
 
-    State.searching = false;
+    state.searching = false;
     return std::string(buffer);
 }
 
 void
-ReadInput()
+read_input()
 {
     int c;
     bool volume_changed = false;
-    bool lockChanged = false;
+    bool lock_changed = false;
 
     size_t maxlen = 0;
 
@@ -35,202 +35,202 @@ ReadInput()
         switch (c)
         {
             case 'q':
-                State.exit = true;
+                state.exit = true;
 
-                if (State.paused)
-                    playCnd.notify_one();
+                if (state.paused)
+                    play_cnd.notify_one();
 
                 return;
 
             case 'o':
-                State.next = true;
+                state.next = true;
                 break;
 
             case 'i':
-                State.prev = true;
+                state.prev = true;
                 break;
 
             case '0':
-                State.volume += 0.003;
+                state.volume += 0.003;
                 volume_changed = true;
                 break;
             case ')':
-                State.volume += 0.001;
+                state.volume += 0.001;
                 volume_changed = true;
                 break;
 
             case '9':
-                State.volume -= 0.003;
+                state.volume -= 0.003;
                 volume_changed = true;
                 break;
             case '(':
-                State.volume -= 0.001;
+                state.volume -= 0.001;
                 volume_changed = true;
                 break;
 
             case 'l':
             case 'L':
-                State.right = true;
+                state.right = true;
                 break;
 
             case 'h':
             case 'H':
-                State.left = true;
+                state.left = true;
                 break;
 
             case 'c':
             case ' ':
-                State.paused = !State.paused;
-                lockChanged = true;
+                state.paused = !state.paused;
+                lock_changed = true;
                 break;
 
             case 'j':
-                State.goDown = true;
-                State.inQSelected++;
+                state.go_down = true;
+                state.in_q_selected++;
 
-                if (State.inQSelected > State.Size() - 1)
-                    State.inQSelected = State.Size() - 1;
+                if (state.in_q_selected > state.size() - 1)
+                    state.in_q_selected = state.size() - 1;
 
-                PrintSongList();
+                print_song_list();
                 break;
             case 'k':
-                State.goUp = true;
-                State.inQSelected--;
+                state.go_up = true;
+                state.in_q_selected--;
 
-                if (State.inQSelected < 0)
-                    State.inQSelected = 0;
+                if (state.in_q_selected < 0)
+                    state.in_q_selected = 0;
 
-                PrintSongList();
+                print_song_list();
                 break;
 
             case 'g':
-                State.inQSelected = 0;
-                State.firstToDraw = 0;
+                state.in_q_selected = 0;
+                state.first_to_draw = 0;
 
-                PrintSongList();
+                print_song_list();
                 break;
             case 'G':
-                State.inQSelected = State.Size() - 1;
-                State.firstToDraw = (State.Size() - 1) - songListSubWin->_maxy;
+                state.in_q_selected = state.size() - 1;
+                state.first_to_draw = (state.size() - 1) - song_list_sub_win->_maxy;
 
-                PrintSongList();
+                print_song_list();
                 break;
 
             case 4: /* C-d */
             case KEY_NPAGE:
-                State.inQSelected += 22;
-                State.firstToDraw += 22;
+                state.in_q_selected += 22;
+                state.first_to_draw += 22;
 
-                if (State.firstToDraw > State.Size())
-                    State.firstToDraw = (State.Size() - 1) - songListSubWin->_maxy;
-                if (State.inQSelected >= State.Size())
-                    State.inQSelected = State.Size() - 1;
+                if (state.first_to_draw > state.size())
+                    state.first_to_draw = (state.size() - 1) - song_list_sub_win->_maxy;
+                if (state.in_q_selected >= state.size())
+                    state.in_q_selected = state.size() - 1;
 
-                PrintSongList();
+                print_song_list();
                 break;
             case 21: /* C-u */
             case KEY_PPAGE:
-                State.inQSelected -= 22;
-                State.firstToDraw -= 22;
+                state.in_q_selected -= 22;
+                state.first_to_draw -= 22;
 
-                if (State.firstToDraw < 0)
-                    State.firstToDraw = 0;
-                if (State.inQSelected < 0)
-                    State.inQSelected = 0;
+                if (state.first_to_draw < 0)
+                    state.first_to_draw = 0;
+                if (state.in_q_selected < 0)
+                    state.in_q_selected = 0;
 
-                PrintSongList();
+                print_song_list();
                 break;
 
             case '\n':
-                State.pressedEnter = true;
-                State.inQ = State.inQSelected;
+                state.pressed_enter = true;
+                state.in_q = state.in_q_selected;
                 break;
 
             case 12: /* C-l */
-                PrintSongName();
-                PrintVolume();
-                RefreshWindows();
-                PrintSongList();
+                print_song_name();
+                print_volume();
+                refresh_windows();
+                print_song_list();
                 break;
 
             case 47: /* / */
-                maxlen = std::max(size_t(length(sbuff) - 1), size_t(bottomRow->_maxx - 1));
+                maxlen = std::max(size_t(length(sbuff) - 1), size_t(bottom_row->_maxx - 1));
 
-                SubstringSearch(GetString(maxlen, true), true);
+                substring_search(get_string(maxlen, true), true);
 
-                MoveToFound(SeachNP::nochange);
-                PrintSongList();
+                move_to_found(seach_np::nochange);
+                print_song_list();
 
-                wmove(bottomRow, 0, 0);
-                wclrtobot(bottomRow);
+                wmove(bottom_row, 0, 0);
+                wclrtobot(bottom_row);
                 break;
 
             case 63: /* ? */
-                maxlen = std::max(size_t(length(sbuff) - 1), size_t(bottomRow->_maxx - 1));
+                maxlen = std::max(size_t(length(sbuff) - 1), size_t(bottom_row->_maxx - 1));
 
-                SubstringSearch(GetString(maxlen, false), false);
+                substring_search(get_string(maxlen, false), false);
 
-                MoveToFound(SeachNP::nochange);
-                PrintSongList();
+                move_to_found(seach_np::nochange);
+                print_song_list();
 
-                wmove(bottomRow, 0, 0);
-                wclrtobot(bottomRow);
+                wmove(bottom_row, 0, 0);
+                wclrtobot(bottom_row);
                 break;
 
             case 'n':
-                MoveToFound(SeachNP::forward);
-                PrintSongList();
+                move_to_found(seach_np::forward);
+                print_song_list();
                 break;
             case 'N':
-                MoveToFound(SeachNP::backwards);
-                PrintSongList();
+                move_to_found(seach_np::backwards);
+                print_song_list();
                 break;
 
             case 'r':
-                State.repeatOnEnd = !State.repeatOnEnd;
-                PrintSongName();
+                state.repeatOnEnd = !state.repeatOnEnd;
+                print_song_name();
                 break;
 
             case KEY_RESIZE:
-                PrintSongName();
-                PrintVolume();
-                RefreshWindows();
-                PrintSongList();
+                print_song_name();
+                print_volume();
+                refresh_windows();
+                print_song_list();
                 break;
 
             default:
 #ifdef DEBUG
-                PrintCharDebug(c);
+                print_char_debug(c);
 #endif
                 break;
         }
 
-        State.volume = Clamp(State.volume, State.minVolume, State.maxVolume);
+        state.volume = Clamp(state.volume, state.min_volume, state.max_volume);
 
         if (volume_changed)
         {
             volume_changed = false;
-            PrintVolume();
+            print_volume();
         }
 
-        if (lockChanged && !State.paused)
+        if (lock_changed && !state.paused)
         {
-            lockChanged = false;
-            playCnd.notify_one();
+            lock_changed = false;
+            play_cnd.notify_one();
         }
     }
 }
 
 #ifdef DEBUG
 void
-PrintCharDebug(char c)
+print_char_debug(char c)
 {
-    std::lock_guard pl(printMtx);
+    std::lock_guard pl(print_mtx);
 
     std::string_view fmt {"pressed: %c(%d)"};
     move(stdscr->_maxy, (stdscr->_maxx - fmt.size()));
     clrtoeol();
     printw(fmt.data(), c, c);
-    mvprintw(stdscr->_maxy, 0, "size: %lu", State.songList.size());
+    mvprintw(stdscr->_maxy, 0, "size: %lu", state.song_list.size());
 }
 #endif
