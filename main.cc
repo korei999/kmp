@@ -77,9 +77,9 @@ print_volume()
     move(1, 0);
     clrtoeol();
 
-    attron(A_BOLD | COLOR_PAIR(Clr::green));
+    attron(A_BOLD | COLOR_PAIR(clr::green));
     printw(volfmt, frac / 2);
-    attroff(A_BOLD | COLOR_PAIR(Clr::green));
+    attroff(A_BOLD | COLOR_PAIR(clr::green));
     refresh();
 }
 
@@ -113,12 +113,12 @@ print_song_list_in_range(long first, long last)
             wclrtoeol(song_list_sub_win);
 
             if (sel == state.in_q)
-                wattron(song_list_sub_win, COLOR_PAIR(Clr::yellow));
+                wattron(song_list_sub_win, COLOR_PAIR(clr::yellow));
             if (sel == state.in_q_selected)
                 wattron(song_list_sub_win, A_REVERSE);
 
-            mvwprintw(song_list_sub_win, i, 1, "%.*s",  song_list_sub_win->_maxx - 2, delpath.data());
-            wattroff(song_list_sub_win, A_REVERSE | COLOR_PAIR(Clr::yellow));
+            mvwprintw(song_list_sub_win, i, 1, "%.*s",  song_list_sub_win->_maxx - 1, delpath.data());
+            wattroff(song_list_sub_win, A_REVERSE | COLOR_PAIR(clr::yellow));
         }
         else
         {
@@ -169,17 +169,17 @@ print_song_name()
 
     move(4, 0);
     clrtoeol();
-    if (!state.repeatOnEnd)
+    if (!state.repeat_on_end)
         printw("%lu / %lu playing:    ", state.in_q + 1, state.song_list.size());
     else
         printw("%lu / %lu playing: (R)", state.in_q + 1, state.song_list.size());
 
     move(5, 0);
     clrtoeol();
-    attron(A_BOLD | COLOR_PAIR(Clr::yellow));
+    attron(A_BOLD | COLOR_PAIR(clr::yellow));
     printw("%s", state.song_list[state.in_q].data()); 
 
-    attroff(A_BOLD | COLOR_PAIR(Clr::yellow));
+    attroff(A_BOLD | COLOR_PAIR(clr::yellow));
 
     refresh();
 }
@@ -339,21 +339,21 @@ main(int argc, char* argv[])
     refresh();
 
     /* -1 to preserve default */
-    int td = (int)Clr::termdef;
-    init_pair(Clr::green, COLOR_GREEN, td);
-    init_pair(Clr::yellow, COLOR_YELLOW, td);
-    init_pair(Clr::blue, COLOR_BLUE, td);
-    init_pair(Clr::cyan, COLOR_CYAN, td);
-    init_pair(Clr::red, COLOR_RED, td);
+    int td = (int)clr::termdef;
+    init_pair(clr::green, COLOR_GREEN, td);
+    init_pair(clr::yellow, COLOR_YELLOW, td);
+    init_pair(clr::blue, COLOR_BLUE, td);
+    init_pair(clr::cyan, COLOR_CYAN, td);
+    init_pair(clr::red, COLOR_RED, td);
 
     /* TODO: hardcoded numbers */
     song_list_win = newwin(stdscr->_maxy - 6, stdscr->_maxx, 6, 0);
     box(song_list_win, 0, 0);
     song_list_sub_win = subwin(song_list_win,
-                            song_list_win->_maxy - 1,
-                            song_list_win->_maxx - 1,
-                            song_list_win->_begy + 1,
-                            song_list_win->_begx + 1);
+                               song_list_win->_maxy - 1,
+                               song_list_win->_maxx - 1,
+                               song_list_win->_begy + 1,
+                               song_list_win->_begx + 1);
 
     bottom_row = newwin(0, 0, stdscr->_maxy, 0);
     wrefresh(bottom_row);
@@ -398,7 +398,7 @@ main(int argc, char* argv[])
             continue;
         }
 
-        if (state.repeatOnEnd && state.in_q == size - 1)
+        if (state.repeat_on_end && state.in_q == size - 1)
         {
             state.in_q = 0;
             continue;

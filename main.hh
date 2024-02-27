@@ -14,7 +14,7 @@ void print_song_list();
 void refresh_windows();
 void print_song_name();
 
-enum Clr : int
+enum clr : int
 {
     termdef = -1, /* -1 should preserve terminal default color due to use_default_colors() */
     green = 1,
@@ -47,7 +47,7 @@ struct program_state
     bool paused = false;
     bool exit = false;
 
-    bool repeatOnEnd = false;
+    bool repeat_on_end = false;
 
     bool next = false;
     bool prev = false;

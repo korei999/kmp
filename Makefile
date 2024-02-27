@@ -2,7 +2,7 @@ MAKEFLAGS := --jobs=$(shell nproc) --output-sync=target
 
 include dbg.mk
 
-CC := clang++ -fcolor-diagnostics -fansi-escape-codes -stdlib=libc++
+CC := clang++ -stdlib=libc++ -fcolor-diagnostics -fansi-escape-codes -fdiagnostics-format=msvc
 WARNING := -Wall -Wextra -Wpedantic
 
 PGKS := alsa opusfile opus ncursesw

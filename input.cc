@@ -12,9 +12,9 @@ get_string(size_t maxlen, bool forward)
     forward ? waddch(bottom_row, '/') : waddch(bottom_row, '?');
     wrefresh(bottom_row);
 
-    char buffer[50] {};
+    char buffer[255] {};
     echo();
-    wgetnstr(bottom_row, buffer, length(buffer) - 1);
+    wgetnstr(bottom_row, buffer, std::min(length(buffer) - 1, maxlen));
     noecho();
 
     state.searching = false;
@@ -30,7 +30,7 @@ read_input()
 
     size_t maxlen = 0;
 
-    while ( (c = getch()) )
+    while ((c = getch()))
     {
         switch (c)
         {
@@ -187,7 +187,7 @@ read_input()
                 break;
 
             case 'r':
-                state.repeatOnEnd = !state.repeatOnEnd;
+                state.repeat_on_end = !state.repeat_on_end;
                 print_song_name();
                 break;
 
