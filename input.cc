@@ -189,6 +189,7 @@ read_input()
             case 'r':
                 state.repeat_on_end = !state.repeat_on_end;
                 print_song_name();
+                refresh_windows();
                 break;
 
             case KEY_RESIZE:
