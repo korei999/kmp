@@ -70,7 +70,7 @@ struct program_state
     bool go_up = 0;
 
     long size() const { return song_list.size(); }
-    const std::string_view song_in_q() const { return song_list[in_q]; }
+    std::string_view song_in_q() const { return song_list[in_q]; }
 };
 
 extern WINDOW* song_list_win;

@@ -1,7 +1,6 @@
 #include "main.hh"
 #include "player.hh"
 #include "util.hh"
-// #include "wav.hh"
 #include "input.hh"
 
 #include <alsa/asoundlib.h>
@@ -12,15 +11,15 @@
 #include <mutex>
 #include <thread>
 
-/* gloabls */
+/* gloabls defaults */
 namespace g
 {
 
 unsigned sample_rate = 48000;
 unsigned channels = 2;
 
-unsigned buffer_time = 250'000; /* ring buffer length in us */ /* 500'000 us == 0.5 s */
-unsigned period_time = 100'000;                                /* period time in us */
+unsigned buffer_time = 50'000; /* ring buffer length in us */ /* 500'000 us == 0.5 s */
+unsigned period_time = 25'000;                                /* period time in us */
 
 unsigned step = 200;
 
@@ -29,8 +28,8 @@ unsigned step = 200;
 program_state state
 {
     .volume = 1.010f,
-    .min_volume = 1.000f,
-    .max_volume = 1.261f,
+    // .min_volume = 1.000f,
+    // .max_volume = 1.261f,
 };
 
 WINDOW* song_list_win;
@@ -91,17 +90,11 @@ print_song_list_in_range(long first, long last)
     long size = state.song_list.size();
 
     if (size < maxlines)
-    {
         first = 0;
-        last = size;
-    } 
     else if (last > size && (size - maxlines) >= 0)
-    {
         first = size - maxlines;
-        last = size;
-    }
 
-    for (long i = 0; i < last; i++)
+    for (long i = 0; i < maxlines; i++)
     {
         long sel = i + first;
         if (sel < size)
@@ -117,7 +110,7 @@ print_song_list_in_range(long first, long last)
             if (sel == state.in_q_selected)
                 wattron(song_list_sub_win, A_REVERSE);
 
-            mvwprintw(song_list_sub_win, i, 1, "%.*s",  song_list_sub_win->_maxx - 1, delpath.data());
+            mvwprintw(song_list_sub_win, i, 1, "%.*s", song_list_sub_win->_maxx - 1, delpath.data());
             wattroff(song_list_sub_win, A_REVERSE | COLOR_PAIR(clr::yellow));
         }
         else
@@ -204,12 +197,10 @@ play_file(const std::string_view s)
 {
     int err;
 
-    /* sampleRate of opus is always 48KHz */
-
     /* some songs give !2 channels, and speedup playback */
     player::alsa p(s);
 
-    auto length_in_s = p.pcmtotal / 48000;
+    auto length_in_s = p.pcmtotal / p.sample_rate;
 
     p.print();
     print_min_sec(length_in_s, length_in_s);
@@ -297,11 +288,10 @@ play_file(const std::string_view s)
             rampVol += 0.1;
         }
 
-        for (size_t i = 0; i < p.period_time; i += 2) /* 2 channels hardcoded */
+        for (size_t i = 0; i < p.chunk.size(); i += p.channels) /* 2 channels hardcoded */
         {
-            p.chunk[i    ] *= vol; /* right */
-            p.chunk[i + 1] *= vol; /* left */
-            // Printe("{}, {}\n", p.chunk[i], p.chunk[i + 1]);
+            for (size_t j = 0; j < p.channels; j++)
+                p.chunk[i + j] *= vol;
         }
 
         if (p.play_chunk() == -1)
@@ -310,17 +300,6 @@ play_file(const std::string_view s)
             break;
         }
     }
-}
-
-void
-WavPlay(const std::string_view s)
-{
-    player::alsa p(s);
-    wav_file wav(s, STRIDE);
-    wav.channels = p.channels;
-
-    if (wav.data())
-        wav.play(p.handle);
 }
 
 int
@@ -365,9 +344,9 @@ main(int argc, char* argv[])
 
     for (long i = 1; i < argc; i++)
     {
-        std::string_view songName = argv[i];
-        if (songName.ends_with(".opus")/*|| songName.ends_with(".wav")*/) {
-            state.song_list.push_back(songName);
+        std::string_view song_name = argv[i];
+        if (song_name.ends_with(".opus") || song_name.ends_with(".wav")) {
+            state.song_list.push_back(song_name);
         }
     }
 
@@ -410,5 +389,6 @@ main(int argc, char* argv[])
     delwin(song_list_sub_win);
     delwin(song_list_win);
     endwin();
+    fflush(stderr);
     return 0;
 }

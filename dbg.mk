@@ -4,9 +4,12 @@ SAFE_STACK += -mshstk -fstack-protector-all
 ASAN :=
 ASAN += -fsanitize=address
 
+WAVE := -DDEBUG_WAVE
+
 DEBUG :=
-DEBUG += -DDEBUG 
 DEBUG += -g
+DEBUG += -DDEBUG 
+DEBUG += $(WAVE)
 
 WNO := 
 WNO += -Wno-unused-parameter

@@ -8,7 +8,7 @@
 namespace player
 {
 
-enum file_t : int
+enum class file_t : int
 {
     OPUS,
     WAV,
@@ -30,21 +30,22 @@ struct alsa
 
     [[maybe_unused]] int period_event = 0; /* produce poll event after each period */
 
-    snd_pcm_t* handle;
-    snd_pcm_hw_params_t* hw_params;
-    snd_pcm_sw_params_t* sw_params;
+    snd_pcm_t* handle {};
+    snd_pcm_hw_params_t* hw_params {};
+    snd_pcm_sw_params_t* sw_params {};
 
-    enum file_t type;
-    OggOpusFile* opus_parser;
-    wav_file wav_parser;
+    enum file_t type {};
+    OggOpusFile* opus_parser {};
+    wav_file wav_parser {};
 
     // s16* chunk;
     std::vector<s16> chunk;
+    s16* chunk_ptr;
     long pcmtotal;
     u64 now;
 
     alsa(std::string_view file_path,
-         unsigned _period_time = 1920,
+         unsigned _period_time = g::period_time,
          unsigned _sample_rate = g::sample_rate,
          unsigned _bufferTime = g::buffer_time,
          const std::string_view device = "default",
