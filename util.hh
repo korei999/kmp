@@ -57,6 +57,5 @@ load_file(const std::string_view path)
     fread(s.data(), 1L, file_size, fp);
 
     fclose(fp);
-
     return s;
 }

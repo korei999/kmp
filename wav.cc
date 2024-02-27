@@ -2,7 +2,7 @@
 #include "main.hh"
 #include "util.hh"
 
-void
+int
 wav_file::open_file(const std::string_view path)
 {
     std::string file_data = load_file(path);
@@ -24,6 +24,12 @@ wav_file::open_file(const std::string_view path)
     };
 
     std::string riff_chunk_id {read_bytes_to_str(4)};
+    if (riff_chunk_id != "RIFF")
+    {
+        Die("is this(%s) file not wave? (%s)\n", path.data(), riff_chunk_id.data());
+        return 1;
+    }
+
     s32 riff_chunk_size = read_type_bytes.operator()<decltype(riff_chunk_size)>();
     std::string wave_format {read_bytes_to_str(4)};
     std::string fmt {read_bytes_to_str(4)};
@@ -98,6 +104,8 @@ wav_file::open_file(const std::string_view path)
     channels = nchannels;
     this->block_align = block_align;
     this->riff_chunk_size = riff_chunk_size;
+
+    return 0;
 }
 
 int

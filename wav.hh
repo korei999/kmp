@@ -20,7 +20,7 @@ struct wav_file
 
     wav_file() = default;
 
-    void open_file(const std::string_view path);
+    int open_file(const std::string_view path);
 
     int next_chunk();
 
