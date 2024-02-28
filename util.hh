@@ -23,7 +23,7 @@
 
 inline
 f64
-LinearToDB(const f64 linear)
+linear_to_db(const f64 linear)
 {
     return 10.f * log10(linear);
 }

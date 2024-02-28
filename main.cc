@@ -210,7 +210,7 @@ play_file(const std::string_view s)
     print_song_list();
 
     long counter = 0;
-    f64 rampVol = 0;
+    f64 ramp_vol = 0;
     while ((err = p.next_chunk() > 0))
     {
         if (state.exit)
@@ -279,20 +279,18 @@ play_file(const std::string_view s)
         }
 
         /* modify chunk */
-        f64 vol = LinearToDB(state.volume);
+        f64 vol = linear_to_db(state.volume);
 
         /* minimize crack at the very beggining of playback */
-        if (rampVol <= 1.0)
+        if (ramp_vol <= 1.0)
         {
-            vol *= rampVol;
-            rampVol += 0.1;
+            vol *= ramp_vol;
+            ramp_vol += 0.1;
         }
-
-        for (size_t i = 0; i < p.chunk.size(); i += p.channels) /* 2 channels hardcoded */
-        {
+        /* apply volume factor on each chunk sample, here we can do any modification directly */
+        for (size_t i = 0; i < p.chunk.size(); i += p.channels)
             for (size_t j = 0; j < p.channels; j++)
                 p.chunk[i + j] *= vol;
-        }
 
         if (p.play_chunk() == -1)
         {
