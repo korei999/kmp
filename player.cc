@@ -378,6 +378,7 @@ alsa::init_wav()
         Die("error, opening wav file\n");
         exit(EXIT_FAILURE);
     }
+    Printe("song_data.size(): {}\n", wav_parser.song_data.size());
 
     channels = wav_parser.channels;
     sample_rate = wav_parser.sample_rate;
