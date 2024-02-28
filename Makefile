@@ -10,7 +10,7 @@ PKG := $(shell pkg-config --cflags $(PGKS))
 PKG_LIB := $(shell pkg-config --libs $(PGKS))
 
 CFLAGS := -std=c++23 -pipe $(PKG)
-LDFLAGS := -lasound -lm $(PKG_LIB)
+LDFLAGS := -lm $(PKG_LIB)
 
 SRCD := .
 BD := ./build
