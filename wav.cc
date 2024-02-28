@@ -83,7 +83,7 @@ wav_file::open_file(const std::string_view path)
         Printe("list_size: {}\n", list_size);
 #endif
     }
-    std::string skip_list = read_bytes_to_str(list_size);
+    std::string list_info = read_bytes_to_str(list_size);
     data_chunk_id = read_bytes_to_str(4);
 
     /* number of bytes in the data */
@@ -108,7 +108,7 @@ wav_file::open_file(const std::string_view path)
     Printe("channel_mask: {}\n", channel_mask);
     Printe("sub_format: {}\n", sub_format);
     Printe("data_chunk_id: {}\n", data_chunk_id);
-    Printe("skip_list: {}\n", skip_list);
+    Printe("list_info: {}\n", list_info);
     Printe("data_chunk_size: {}\n", data_chunk_size);
 #endif
     sample_rate = samples_per_second;

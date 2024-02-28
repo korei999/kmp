@@ -27,7 +27,7 @@ all: LDFLAGS += -fuse-ld=lld
 all: $(EXEC)
 
 # debug build
-debug: CC += #$(ASAN)
+debug: CC += $(ASAN)
 debug: CFLAGS += -g -O0 $(DEBUG) $(WARNING) $(WNO)
 debug: LDFLAGS += -fuse-ld=lld
 debug: $(EXEC)
