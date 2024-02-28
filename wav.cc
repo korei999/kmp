@@ -79,7 +79,9 @@ wav_file::open_file(const std::string_view path)
     if (data_chunk_id == "LIST")
     {
         list_size = read_type_bytes.operator()<decltype(list_size)>();
+#ifdef DEBUG_WAVE
         Printe("list_size: {}\n", list_size);
+#endif
     }
     std::string skip_list = read_bytes_to_str(list_size);
     data_chunk_id = read_bytes_to_str(4);
