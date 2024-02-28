@@ -33,15 +33,17 @@ wav_file::open_file(const std::string_view path)
     s32 riff_chunk_size = read_type_bytes.operator()<decltype(riff_chunk_size)>();
     std::string wave_format {read_bytes_to_str(4)};
     std::string fmt {read_bytes_to_str(4)};
+    // s32 fmt_id = read_type_bytes.operator()<decltype(fmt_id)>();
     s32 fmt_chunk_size = read_type_bytes.operator()<decltype(fmt_chunk_size)>();
-
     /* PCM = 1, anything else than 1 means compression */
     s16 audio_format = read_type_bytes.operator()<decltype(audio_format)>();
     s16 nchannels = read_type_bytes.operator()<decltype(nchannels)>();
+    /* 8000, 44100, 48000 ... */
     s32 samples_per_second = read_type_bytes.operator()<decltype(samples_per_second)>();
-
+    /* byte rate = sample rate * channels * bits per sample / 8 */
+    s32 avg_byte_per_second = read_type_bytes.operator()<decltype(avg_byte_per_second)>();
     /* nchannels * bits_per_sample / 8 */
-    s32 block_align = read_type_bytes.operator()<decltype(block_align)>();
+    s16 block_align = read_type_bytes.operator()<decltype(block_align)>();
 
     s16 bits_per_sample = read_type_bytes.operator()<decltype(bits_per_sample)>();
 
@@ -51,28 +53,28 @@ wav_file::open_file(const std::string_view path)
         exit(1);
     }
 
-    s16 extention_size = 0; /* size of the extension: 22 */
-    s16 valid_bits_per_sample = 0; /* should be lower or equal to bits per sample */
-    s32 channel_mask = 0; /* speaker position mask */
-    std::string sub_format {}; /* GUID (first two bytes are the data format code) */
-    switch (fmt_chunk_size)
-    {
-        case 18:
-            extention_size = read_type_bytes.operator()<decltype(extention_size)>();
-            break;
+    // s16 extention_size = 0; /* size of the extension: 22 */
+    // s16 valid_bits_per_sample = 0; /* should be lower or equal to bits per sample */
+    // s32 channel_mask = 0; /* speaker position mask */
+    // std::string sub_format {}; /* GUID (first two bytes are the data format code) */
+    // switch (fmt_chunk_size)
+    // {
+        // case 18:
+            // extention_size = read_type_bytes.operator()<decltype(extention_size)>();
+            // break;
 
-        case 40:
-            extention_size = read_type_bytes.operator()<decltype(extention_size)>();
-            valid_bits_per_sample = read_type_bytes.operator()<decltype(valid_bits_per_sample)>();
-            channel_mask = read_type_bytes.operator()<decltype(channel_mask)>();
-            sub_format = read_bytes_to_str(16);
-            break;
+        // case 40:
+            // extention_size = read_type_bytes.operator()<decltype(extention_size)>();
+            // valid_bits_per_sample = read_type_bytes.operator()<decltype(valid_bits_per_sample)>();
+            // channel_mask = read_type_bytes.operator()<decltype(channel_mask)>();
+            // sub_format = read_bytes_to_str(16);
+            // break;
 
-        default:
-            break;
-    }
+        // default:
+            // break;
+    // }
 
-    s16 next_section = read_type_bytes.operator()<decltype(next_section)>();
+    // std::string skip_section = read_bytes_to_str(fmt_chunk_size);
     std::string data_chunk_id = read_bytes_to_str(4);
 
     s32 list_size = 0;
@@ -82,13 +84,16 @@ wav_file::open_file(const std::string_view path)
 #ifdef DEBUG_WAVE
         Printe("list_size: {}\n", list_size);
 #endif
+
+        data_chunk_id = read_bytes_to_str(list_size);
+        data_chunk_id = read_bytes_to_str(4);
     }
-    std::string list_info = read_bytes_to_str(list_size);
-    data_chunk_id = read_bytes_to_str(4);
+    // std::string list_info = read_bytes_to_str(list_size);
 
     /* number of bytes in the data */
     s32 data_chunk_size = read_type_bytes.operator()<decltype(data_chunk_size)>();
     /* now load data_chunk_size of the rest of the file */
+    Printe("data_chunk_size: {}\n", data_chunk_size);
     song_data.resize(data_chunk_size, 0);
     memcpy(song_data.data(), &rd[o], data_chunk_size);
 
@@ -97,18 +102,19 @@ wav_file::open_file(const std::string_view path)
     Printe("riff_chunk_size: {}\n", riff_chunk_size);
     Printe("wave_format: {}\n", wave_format);
     Printe("fmt: {}\n", fmt);
+    // Printe("fmt_id: {}\n", fmt_id);
     Printe("fmt_chunk_size: {}\n", fmt_chunk_size);
     Printe("audio_format: {}\n", audio_format);
     Printe("nchannels: {}\n", nchannels);
     Printe("samples_per_second: {}\n", samples_per_second);
     Printe("block_align: {}\n", block_align);
     Printe("bits_per_sample: {}\n", bits_per_sample);
-    Printe("extention_size: {}\n", extention_size);
-    Printe("valid_bits_per_sample: {}\n", valid_bits_per_sample);
-    Printe("channel_mask: {}\n", channel_mask);
-    Printe("sub_format: {}\n", sub_format);
+    // Printe("extention_size: {}\n", extention_size);
+    // Printe("valid_bits_per_sample: {}\n", valid_bits_per_sample);
+    // Printe("channel_mask: {}\n", channel_mask);
+    // Printe("sub_format: {}\n", sub_format);
     Printe("data_chunk_id: {}\n", data_chunk_id);
-    Printe("list_info: {}\n", list_info);
+    // Printe("list_info: {}\n", list_info);
     Printe("data_chunk_size: {}\n", data_chunk_size);
 #endif
     sample_rate = samples_per_second;
