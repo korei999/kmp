@@ -84,7 +84,6 @@ wav_file::open_file(const std::string_view path)
 #ifdef DEBUG_WAVE
         Printe("list_size: {}\n", list_size);
 #endif
-
         data_chunk_id = read_bytes_to_str(list_size);
         data_chunk_id = read_bytes_to_str(4);
     }
@@ -93,7 +92,9 @@ wav_file::open_file(const std::string_view path)
     /* number of bytes in the data */
     s32 data_chunk_size = read_type_bytes.operator()<decltype(data_chunk_size)>();
     /* now load data_chunk_size of the rest of the file */
+#ifdef DEBUG_WAVE
     Printe("data_chunk_size: {}\n", data_chunk_size);
+#endif
     song_data.resize(data_chunk_size, 0);
     memcpy(song_data.data(), &rd[o], data_chunk_size);
 
