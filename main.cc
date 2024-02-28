@@ -129,7 +129,6 @@ print_song_list()
     std::lock_guard lock(print_mtx);
 
     long size = state.song_list.size();
-    int maxNumLen = std::to_string(size).size();
     // std::string_view selfmt {"inQSelected: %*ld | inQ: %*ld | maxlines: %*ld | first: %*ld | second: %*ld]"};
 
     long last = state.first_to_draw + song_list_sub_win->_maxy + 1;
