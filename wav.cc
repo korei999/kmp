@@ -74,31 +74,25 @@ wav_file::open_file(const std::string_view path)
             // break;
     // }
 
-    // std::string skip_section = read_bytes_to_str(fmt_chunk_size);
     std::string data_chunk_id = read_bytes_to_str(4);
 
     s32 list_size = 0;
-    if (data_chunk_id == "LIST")
+    std::string list_info;
+    if (data_chunk_id == "LIST" || data_chunk_id != "data")
     {
         list_size = read_type_bytes.operator()<decltype(list_size)>();
 #ifdef DEBUG_WAVE
         Printe("list_size: {}\n", list_size);
 #endif
-        data_chunk_id = read_bytes_to_str(list_size);
+        list_info = read_bytes_to_str(list_size);
         data_chunk_id = read_bytes_to_str(4);
     }
-    // std::string list_info = read_bytes_to_str(list_size);
 
     /* number of bytes in the data */
     s32 data_chunk_size = read_type_bytes.operator()<decltype(data_chunk_size)>();
     /* now load data_chunk_size of the rest of the file */
 #ifdef DEBUG_WAVE
     Printe("data_chunk_size: {}\n", data_chunk_size);
-#endif
-    song_data.resize(data_chunk_size, 0);
-    memcpy(song_data.data(), &rd[o], data_chunk_size);
-
-#ifdef DEBUG_WAVE
     Printe("riff_chunk_id: {}\n", riff_chunk_id);
     Printe("riff_chunk_size: {}\n", riff_chunk_size);
     Printe("wave_format: {}\n", wave_format);
@@ -115,7 +109,7 @@ wav_file::open_file(const std::string_view path)
     // Printe("channel_mask: {}\n", channel_mask);
     // Printe("sub_format: {}\n", sub_format);
     Printe("data_chunk_id: {}\n", data_chunk_id);
-    // Printe("list_info: {}\n", list_info);
+    Printe("list_info: {}\n", list_info);
     Printe("data_chunk_size: {}\n", data_chunk_size);
 #endif
     sample_rate = samples_per_second;
@@ -123,13 +117,17 @@ wav_file::open_file(const std::string_view path)
     this->block_align = block_align;
     this->riff_chunk_size = riff_chunk_size;
 
+    song_data.resize(data_chunk_size, 0);
+    memcpy(song_data.data(), &rd[o], data_chunk_size);
+
     return 0;
 }
 
 int
 wav_file::next_chunk()
 {
-    if (offset * channels < (long)song_data.size())
+    /* FIXME: mul by 2, because if song has only 1 channel this check will be twice bigger then needed */
+    if ((offset * 2) < (long)song_data.size())
     {
         memcpy(chunk_ptr->data(), &song_data[offset], sizeof(s16) * period_time);
         offset += period_time;

@@ -386,6 +386,6 @@ alsa::init_wav()
     wav_parser.period_time = period_time;
     wav_parser.period_size = period_size;
 
-    chunk.resize(g::period_time, 0);
+    chunk.resize(period_time, 0);
     wav_parser.chunk_ptr = &chunk;
 }
