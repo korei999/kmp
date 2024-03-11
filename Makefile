@@ -21,7 +21,7 @@ SRCS := $(shell find $(SRCD) -name '*.cc')
 OBJ := $(SRCS:%=$(BD)/%.o)
 
 # release build
-all: CC += -flto=thin $(SAFE_STACK) 
+all: CC += -flto=full $(SAFE_STACK) 
 all: CFLAGS += -g -O3 -march=sandybridge $(WARNING) -DNDEBUG
 all: LDFLAGS += -fuse-ld=lld
 all: $(EXEC)
@@ -42,7 +42,7 @@ $(EXEC): $(OBJ)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
 $(BD)/%.cc.o: %.cc Makefile dbg.mk *.hh
-	mkdir -p $(BD)
+	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 PREFIX = /usr/local
