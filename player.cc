@@ -356,7 +356,6 @@ alsa::init_opus()
 {
     /* TODO: i don't get why but this is what works for opus */
     period_time = 1920;
-    period_size = 
     sample_rate = 48000; /* opus is always 48KHz */
     opus_parser = op_open_file(current_file.data(), NULL);
     if (!opus_parser)
