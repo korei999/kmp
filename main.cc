@@ -310,6 +310,7 @@ main(int argc, char* argv[])
     curs_set(0);
     noecho();
     cbreak();
+    timeout(1000);
     keypad(stdscr, true);
     keypad(bottom_row, true);
     refresh();
