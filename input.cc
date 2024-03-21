@@ -3,6 +3,8 @@
 #include "main.hh"
 #include "search.hh"
 
+#include <unistd.h>
+
 std::string
 get_string(size_t maxlen, bool forward)
 {
@@ -146,6 +148,9 @@ read_input()
                 state.in_q = state.in_q_selected;
                 break;
 
+            case KEY_RESIZE:
+                endwin();
+                refresh();
             case 12: /* C-l */
                 print_song_name();
                 print_volume();
@@ -190,13 +195,6 @@ read_input()
                 state.repeat_on_end = !state.repeat_on_end;
                 print_song_name();
                 refresh_windows();
-                break;
-
-            case KEY_RESIZE:
-                print_song_name();
-                print_volume();
-                refresh_windows();
-                print_song_list();
                 break;
 
             default:

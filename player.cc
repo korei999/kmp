@@ -159,13 +159,14 @@ alsa::set_hwparams(snd_pcm_access_t access, int resample)
         Die("Unable to set period time %u for playback: %s\n", period_time, snd_strerror(err));
         return err;
     }
-    err = snd_pcm_hw_params_get_period_size(hw_params, &size, &dir);
-    if (err < 0)
-    {
-        Die("Unable to get period size for playback: %s\n", snd_strerror(err));
-        return err;
-    }
-    period_size = size;
+    // err = snd_pcm_hw_params_get_period_size(hw_params, &size, &dir);
+    // if (err < 0)
+    // {
+        // Die("Unable to get period size for playback: %s\n", snd_strerror(err));
+        // return err;
+    // }
+    // period_size = size;
+    period_size = buffer_size / 2; /* FIXME: probably dirty fix */
     /* write the parameters to device */
     err = snd_pcm_hw_params(handle, hw_params);
     if (err < 0)
@@ -355,7 +356,8 @@ alsa::init_opus()
 {
     /* TODO: i don't get why but this is what works for opus */
     period_time = 1920;
-    sample_rate = 48000;
+    period_size = 
+    sample_rate = 48000; /* opus is always 48KHz */
     opus_parser = op_open_file(current_file.data(), NULL);
     if (!opus_parser)
     {
