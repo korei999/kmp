@@ -38,16 +38,15 @@ struct alsa
     OggOpusFile* opus_parser {};
     wav_file wav_parser {};
 
-    // s16* chunk;
     std::vector<s16> chunk;
     s16* chunk_ptr;
     long pcmtotal;
     u64 now;
 
     alsa(std::string_view file_path,
-         unsigned _period_time = g::period_time,
-         unsigned _sample_rate = g::sample_rate,
-         unsigned _bufferTime = g::buffer_time,
+         unsigned _period_time = def::period_time,
+         unsigned _sample_rate = def::sample_rate,
+         unsigned _bufferTime = def::buffer_time,
          const std::string_view device = "default",
          enum _snd_pcm_format _format = SND_PCM_FORMAT_S16_LE,
          snd_pcm_access_t _access = SND_PCM_ACCESS_RW_INTERLEAVED,
@@ -56,7 +55,7 @@ struct alsa
     ~alsa();
 
     int set_channels([[maybe_unused]] u8 _channels);
-    int set_hwparams(snd_pcm_access_t access, int resample);
+    int set_hwparams2(snd_pcm_access_t access, int resample);
     int set_swparams();
 
     void print();

@@ -163,7 +163,7 @@ read_input()
 
                 substring_search(get_string(maxlen, true), true);
 
-                move_to_found(seach_np::nochange);
+                move_to_found(search_np::nochange);
                 print_song_list();
 
                 wmove(bottom_row, 0, 0);
@@ -175,7 +175,7 @@ read_input()
 
                 substring_search(get_string(maxlen, false), false);
 
-                move_to_found(seach_np::nochange);
+                move_to_found(search_np::nochange);
                 print_song_list();
 
                 wmove(bottom_row, 0, 0);
@@ -183,11 +183,11 @@ read_input()
                 break;
 
             case 'n':
-                move_to_found(seach_np::forward);
+                move_to_found(search_np::forward);
                 print_song_list();
                 break;
             case 'N':
-                move_to_found(seach_np::backwards);
+                move_to_found(search_np::backwards);
                 print_song_list();
                 break;
 

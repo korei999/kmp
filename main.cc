@@ -11,19 +11,18 @@
 #include <mutex>
 #include <thread>
 
-/* gloabls defaults */
-namespace g
+namespace def
 {
 
 unsigned sample_rate = 48000;
 unsigned channels = 2;
 
 unsigned buffer_time = 50'000; /* ring buffer length in us */ /* 500'000 us == 0.5 s */
-unsigned period_time = 25'000;                                /* period time in us */
+unsigned period_time = 10'000;                                /* period time in us */
 
 unsigned step = 200;
 
-} // namespace g
+}
 
 program_state state
 {
@@ -129,7 +128,6 @@ print_song_list()
     std::lock_guard lock(print_mtx);
 
     long size = state.song_list.size();
-    // std::string_view selfmt {"inQSelected: %*ld | inQ: %*ld | maxlines: %*ld | first: %*ld | second: %*ld]"};
 
     long last = state.first_to_draw + song_list_sub_win->_maxy + 1;
 
@@ -272,7 +270,7 @@ play_file(const std::string_view s)
             break;
         }
 
-        if (counter++ % 50 && !state.searching)
+        if (counter++ % 25 && !state.searching)
         {
             print_min_sec(p.now / p.sample_rate, length_in_s);
         }
@@ -284,7 +282,7 @@ play_file(const std::string_view s)
         if (ramp_vol <= 1.0)
         {
             vol *= ramp_vol;
-            ramp_vol += 0.1;
+            ramp_vol += 0.04;
         }
         /* apply volume factor on each chunk sample, here we can do any modification directly */
         for (size_t i = 0; i < p.chunk.size(); i += p.channels)

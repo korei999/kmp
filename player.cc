@@ -29,10 +29,11 @@ alsa::alsa(std::string_view file_path,
         exit(EXIT_FAILURE);
     }
 
-    snd_pcm_hw_params_alloca(&hw_params);
-    snd_pcm_sw_params_alloca(&sw_params);
+    snd_pcm_hw_params_malloc(&hw_params);
+    snd_pcm_sw_params_malloc(&sw_params);
 
-    err = set_hwparams(_access, resample);
+    // err = set_hwparams(_access, resample);
+    err = set_hwparams2(_access, resample);
     if (err < 0)
     {
         Die("Setting of hw_params failed: %s\n", snd_strerror(err));
@@ -51,6 +52,9 @@ alsa::~alsa()
 {
     snd_pcm_drain(handle);
     snd_pcm_close(handle);
+
+    snd_pcm_hw_params_free(hw_params);
+    snd_pcm_sw_params_free(sw_params);
 
     if (this->type == file_t::OPUS)
     {
@@ -75,9 +79,9 @@ alsa::set_channels(u8 _channels)
 }
 
 int
-alsa::set_hwparams(snd_pcm_access_t access, int resample)
+alsa::set_hwparams2(snd_pcm_access_t access, int resample)
 {
-    unsigned rrate;
+    unsigned int rrate;
     snd_pcm_uframes_t size;
     int err, dir;
 
@@ -143,15 +147,6 @@ alsa::set_hwparams(snd_pcm_access_t access, int resample)
         return err;
     }
     buffer_size = size;
-
-    ////////////////////////////////////////
-    // unsigned ptimeMin, ptimeMax;
-    // snd_pcm_hw_params_get_period_time_min(hwParams, &ptimeMin, &dir);
-    // snd_pcm_hw_params_get_period_time_max(hwParams, &ptimeMax, &dir);
-    // g::periodTime = Clamp(g::periodTime, ptimeMin, ptimeMax);
-    // periodTime = g::periodTime;
-    ////////////////////////////////////////
-
     /* set the period time */
     err = snd_pcm_hw_params_set_period_time_near(handle, hw_params, &period_time, &dir);
     if (err < 0)
@@ -159,19 +154,18 @@ alsa::set_hwparams(snd_pcm_access_t access, int resample)
         Die("Unable to set period time %u for playback: %s\n", period_time, snd_strerror(err));
         return err;
     }
-    // err = snd_pcm_hw_params_get_period_size(hw_params, &size, &dir);
-    // if (err < 0)
-    // {
-        // Die("Unable to get period size for playback: %s\n", snd_strerror(err));
-        // return err;
-    // }
-    // period_size = size;
-    period_size = buffer_size / 2; /* FIXME: probably dirty fix */
+    err = snd_pcm_hw_params_get_period_size(hw_params, &size, &dir);
+    if (err < 0)
+    {
+        Die("Unable to get period size for playback: %s\n", snd_strerror(err));
+        return err;
+    }
+    period_size = size;
     /* write the parameters to device */
     err = snd_pcm_hw_params(handle, hw_params);
     if (err < 0)
     {
-        Die("Unable to set hw hwParams for playback: %s\n", snd_strerror(err));
+        Die("Unable to set hw params for playback: %s\n", snd_strerror(err));
         return err;
     }
     return 0;
@@ -190,8 +184,8 @@ alsa::set_swparams()
         return err;
     }
     /* start the transfer when the buffer is almost full: */
-    /* (buffer_size / avail_min) * avail_min */
-    err = snd_pcm_sw_params_set_start_threshold(handle, sw_params, (buffer_size / period_size) * period_size);
+    /* (buffer_size / avail_min) * avail_min */ /* ????? */
+    err = snd_pcm_sw_params_set_start_threshold(handle, sw_params, buffer_size);
     if (err < 0)
     {
         Die("Unable to set start threshold mode for playback: %s\n", snd_strerror(err));
@@ -276,7 +270,7 @@ alsa::left()
     switch (type)
     {
         case file_t::OPUS:
-            op_pcm_seek(opus_parser, now - period_time * g::step);
+            op_pcm_seek(opus_parser, now - period_time * def::step);
             break;
 
         case file_t::WAV:
@@ -295,7 +289,7 @@ alsa::right()
     switch (type)
     {
         case file_t::OPUS:
-            op_pcm_seek(opus_parser, now + period_time * g::step);
+            op_pcm_seek(opus_parser, now + period_time * def::step);
             break;
 
         case file_t::WAV:
@@ -316,7 +310,7 @@ alsa::next_chunk()
     switch (type)
     {
         case file_t::OPUS:
-            err = op_read_stereo(opus_parser, chunk.data(), period_time);
+            err = op_read_stereo(opus_parser, chunk.data(), sizeof(s16) * period_time);
             now = op_pcm_tell(opus_parser);
             break;
 

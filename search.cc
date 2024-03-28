@@ -4,8 +4,6 @@
 std::vector<long> search_indices {};
 long search_target = -1;
 
-// size_t h {std::hash<std::string_view>{}(s)};
-
 void
 substring_search(const std::string_view s, bool forward)
 {
@@ -50,7 +48,7 @@ substring_search(const std::string_view s, bool forward)
 }
 
 void
-move_to_found(seach_np val)
+move_to_found(enum search_np val)
 {
     if (search_target != -1 || !search_indices.empty())
     {

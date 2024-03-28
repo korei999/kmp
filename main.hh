@@ -24,7 +24,7 @@ enum clr : int
     red = 5
 };
 
-namespace g
+namespace def
 {
 
 extern unsigned sample_rate;

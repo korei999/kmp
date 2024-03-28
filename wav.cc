@@ -152,7 +152,7 @@ wav_file::pcmtotal()
 void
 wav_file::left()
 {
-    offset -= (period_time * (g::step / 10));
+    offset -= (period_time * (def::step / 10));
     if (offset < 0)
         offset = 0;
 }
@@ -160,5 +160,5 @@ wav_file::left()
 void
 wav_file::right()
 {
-    offset += (period_time * (g::step / 10));
+    offset += (period_time * (def::step / 10));
 }
