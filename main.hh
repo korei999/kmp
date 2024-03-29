@@ -26,15 +26,13 @@ enum clr : int
 
 namespace def
 {
+    extern unsigned sample_rate;
+    extern unsigned channels;
 
-extern unsigned sample_rate;
-extern unsigned channels;
+    extern unsigned buffer_time; /* ring buffer length in us */
+    extern unsigned period_time; /* period time in us */
 
-extern unsigned buffer_time; /* ring buffer length in us */
-extern unsigned period_time; /* period time in us */
-
-extern unsigned step;
-
+    extern unsigned step;
 }
 
 

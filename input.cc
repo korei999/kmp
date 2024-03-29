@@ -149,7 +149,6 @@ read_input()
                 break;
 
             case KEY_RESIZE:
-                endwin();
                 refresh();
             case 12: /* C-l */
                 print_song_name();
@@ -226,10 +225,11 @@ print_char_debug(char c)
 {
     std::lock_guard pl(print_mtx);
 
-    std::string_view fmt {"pressed: %c(%d)"};
+    std::string_view fmt = "pressed: %c(%d)";
     move(stdscr->_maxy, (stdscr->_maxx - fmt.size()));
     clrtoeol();
     printw(fmt.data(), c, c);
-    mvprintw(stdscr->_maxy, 0, "size: %lu", state.song_list.size());
+    std::string_view fmt2 = "size: %lu, maxx: %d, maxy: %d";
+    mvprintw(stdscr->_maxy, 0, fmt2.data(), state.song_list.size(), stdscr->_maxx, stdscr->_maxy);
 }
 #endif

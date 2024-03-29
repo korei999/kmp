@@ -2,7 +2,7 @@ SAFE_STACK :=
 SAFE_STACK += -mshstk -fstack-protector-all 
 
 ASAN :=
-ASAN += -fsanitize=address
+ASAN += #-fsanitize=address
 
 WAVE := -DDEBUG_WAVE
 

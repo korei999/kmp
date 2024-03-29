@@ -21,16 +21,14 @@
 
 #define length(a) (sizeof(a) / sizeof(a[0]))
 
-inline
-f64
+inline f64
 linear_to_db(const f64 linear)
 {
     return 10.f * log10(linear);
 }
 
 template <typename T>
-inline
-T
+inline T
 Clamp(T& value, T& min, T& max)
 {
     if (value < min)
@@ -41,8 +39,7 @@ Clamp(T& value, T& min, T& max)
     return value;
 }
 
-inline
-std::string
+inline std::string
 load_file(const std::string_view path)
 {
     FILE* fp = fopen(path.data(), "rb");

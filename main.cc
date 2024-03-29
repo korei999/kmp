@@ -13,15 +13,13 @@
 
 namespace def
 {
+    unsigned sample_rate = 48000;
+    unsigned channels = 2;
 
-unsigned sample_rate = 48000;
-unsigned channels = 2;
+    unsigned buffer_time = 50'000; /* ring buffer length in us */ /* 500'000 us == 0.5 s */
+    unsigned period_time = 10'000;                                /* period time in us */
 
-unsigned buffer_time = 50'000; /* ring buffer length in us */ /* 500'000 us == 0.5 s */
-unsigned period_time = 10'000;                                /* period time in us */
-
-unsigned step = 200;
-
+    unsigned step = 200;
 }
 
 program_state state
@@ -81,8 +79,7 @@ print_volume()
     refresh();
 }
 
-inline static
-void
+static void
 print_song_list_in_range(long first, long last)
 {
     long maxlines = song_list_sub_win->_maxy + 1;
@@ -167,7 +164,7 @@ print_song_name()
     move(5, 0);
     clrtoeol();
     attron(A_BOLD | COLOR_PAIR(clr::yellow));
-    printw("%s", state.song_list[state.in_q].data()); 
+    printw("%.*s", stdscr->_maxx - 1, state.song_list[state.in_q].data()); 
 
     attroff(A_BOLD | COLOR_PAIR(clr::yellow));
 
@@ -179,14 +176,17 @@ refresh_windows()
 {
     std::lock_guard pl(print_mtx);
 
-    wresize(song_list_win, stdscr->_maxy - 6, stdscr->_maxx);
-    wresize(song_list_sub_win, song_list_win->_maxy - 1, song_list_win->_maxx - 1);
-    mvwin(bottom_row, stdscr->_maxy, 0);
+    if (stdscr->_maxy > 6 && stdscr->_maxx > 6)
+    {
+        wresize(song_list_win, stdscr->_maxy - 6, stdscr->_maxx);
+        wresize(song_list_sub_win, song_list_win->_maxy - 1, song_list_win->_maxx - 1);
+        mvwin(bottom_row, stdscr->_maxy, 0);
 
-    box(song_list_win, 0, 0);
-    move(stdscr->_maxy, 0);
-    clrtoeol();
-    wrefresh(song_list_win);
+        box(song_list_win, 0, 0);
+        move(stdscr->_maxy, 0);
+        clrtoeol();
+        wrefresh(song_list_win);
+    }
 }
 
 void

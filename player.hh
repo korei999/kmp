@@ -24,6 +24,7 @@ struct alsa
     unsigned buffer_time;
 
     snd_pcm_format_t format;
+    int format_size; /* S16 == 2, S32 == 4, S24 == 3? */
 
     snd_pcm_sframes_t buffer_size;
     snd_pcm_sframes_t period_size;
@@ -38,8 +39,8 @@ struct alsa
     OggOpusFile* opus_parser {};
     wav_file wav_parser {};
 
-    std::vector<s16> chunk;
-    s16* chunk_ptr;
+    std::vector<s8> chunk;
+    s8* chunk_ptr;
     long pcmtotal;
     u64 now;
 

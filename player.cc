@@ -239,7 +239,7 @@ alsa::print()
 int
 alsa::play_chunk()
 {
-    long frames = snd_pcm_writei(handle, chunk.data(), chunk.size() / channels);
+    long frames = snd_pcm_writei(handle, chunk.data(), (chunk.size() / format_size) / channels);
 
     if (frames < 0)
         frames = snd_pcm_recover(handle, frames, 0);
@@ -310,7 +310,7 @@ alsa::next_chunk()
     switch (type)
     {
         case file_t::OPUS:
-            err = op_read_stereo(opus_parser, chunk.data(), sizeof(s16) * period_time);
+            err = op_read_stereo(opus_parser, (s16*)chunk.data(), sizeof(s16) * period_time);
             now = op_pcm_tell(opus_parser);
             break;
 
@@ -361,8 +361,9 @@ alsa::init_opus()
     auto link = op_current_link(opus_parser);
     channels = op_channel_count(opus_parser, link);
     pcmtotal = op_pcm_total(opus_parser, link);
+    format_size = sizeof(s16);
 
-    chunk.resize(period_time, 0);
+    chunk.resize(period_time * sizeof(s16), 0);
 }
 
 void
@@ -377,10 +378,11 @@ alsa::init_wav()
     channels = wav_parser.channels;
     sample_rate = wav_parser.sample_rate;
     pcmtotal = wav_parser.pcmtotal();
+    format_size = wav_parser.format_size;
 
     wav_parser.period_time = period_time;
     wav_parser.period_size = period_size;
 
-    chunk.resize(period_time, 0);
+    chunk.resize(period_time * format_size, 0);
     wav_parser.chunk_ptr = &chunk;
 }

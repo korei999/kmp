@@ -14,8 +14,11 @@ struct wav_file
     s8 channels;
     s32 riff_chunk_size;
     s32 block_align;
-    std::vector<s16> song_data {};
-    std::vector<s16>* chunk_ptr;
+    snd_pcm_format_t format;
+    int format_size;
+
+    std::vector<s8> song_data {};
+    std::vector<s8>* chunk_ptr;
     long offset = 0;
 
     wav_file() = default;
