@@ -131,7 +131,7 @@ wav_file::open_file(const std::string_view path)
     this->block_align = block_align;
     this->riff_chunk_size = riff_chunk_size;
 
-    song_data.resize(data_chunk_size, 0);
+    song_data.resize((data_chunk_size / sizeof(s16)) + period_time, 0); /* add additional padding so we don't skip 1 useful unaligned chunk at the end */
     memcpy(song_data.data(), &rd[o], data_chunk_size);
 
     return 0;
@@ -140,11 +140,11 @@ wav_file::open_file(const std::string_view path)
 int
 wav_file::next_chunk()
 {
-    /* FIXME: mul by 2, because if song has only 1 channel this check will be twice bigger then needed */
-    if ((offset) < (long)song_data.size() >> 1)
+    if (now() < pcmtotal() - period_time)
     {
-        memcpy(chunk_ptr->data(), &song_data[offset], format_size * period_time);
+        memcpy(chunk_ptr->data(), &song_data[offset], sizeof(s16) * period_time);
         offset += period_time;
+
         return 1;
     }
 
@@ -160,7 +160,7 @@ wav_file::now()
 long
 wav_file::pcmtotal()
 {
-    return song_data.size() / sizeof(s16) / channels;
+    return song_data.size() / channels;
 }
 
 void
