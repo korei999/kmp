@@ -50,26 +50,22 @@ wav_file::open_file(const std::string_view path)
     s16 bits_per_sample = read_type_bytes.operator()<decltype(bits_per_sample)>();
 
     /* TODO: figure out how to handle 24 bit Wave */
-    this->format = SND_PCM_FORMAT_S16_LE;
-    format_size = sizeof(s16);
+    // this->format = SND_PCM_FORMAT_S16_LE;
+    // format_size = sizeof(s16);
 
-    // switch (bits_per_sample)
-    // {
-        // case 24:
-            // this->format = SND_PCM_FORMAT_S24_LE;
-            // break;
+    switch (bits_per_sample)
+    {
+        case 24:
+            this->format = SND_PCM_FORMAT_S24_LE;
+            this->format_size = 3;
+            break;
 
-        // case 16:
-        // default:
-            // this->format = SND_PCM_FORMAT_S16_LE;
-            // break;
-    // }
-
-    // if (fmt_chunk_size != 16)
-    // {
-        // Die("fmt_chunk_size: '%d' != 16\n", fmt_chunk_size);
-        // // exit(1);
-    // }
+        case 16:
+        default:
+            this->format = SND_PCM_FORMAT_S16_LE;
+            this->format_size = 2;
+            break;
+    }
 
     s16 extention_size = 0; /* size of the extension: 22 */
     s16 valid_bits_per_sample = 0; /* should be lower or equal to bits per sample */
@@ -135,7 +131,7 @@ wav_file::open_file(const std::string_view path)
     this->block_align = block_align;
     this->riff_chunk_size = riff_chunk_size;
 
-    song_data.resize(data_chunk_size * format_size, 0);
+    song_data.resize(data_chunk_size, 0);
     memcpy(song_data.data(), &rd[o], data_chunk_size);
 
     return 0;
@@ -145,10 +141,10 @@ int
 wav_file::next_chunk()
 {
     /* FIXME: mul by 2, because if song has only 1 channel this check will be twice bigger then needed */
-    if ((offset * 2) < (long)song_data.size())
+    if ((offset) < (long)song_data.size() >> 1)
     {
-        memcpy(chunk_ptr->data(), &song_data[offset], period_time * format_size);
-        offset += period_time * format_size;
+        memcpy(chunk_ptr->data(), &song_data[offset], format_size * period_time);
+        offset += period_time;
         return 1;
     }
 

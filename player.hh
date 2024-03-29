@@ -39,8 +39,8 @@ struct alsa
     OggOpusFile* opus_parser {};
     wav_file wav_parser {};
 
-    std::vector<s8> chunk;
-    s8* chunk_ptr;
+    std::vector<s16> chunk;
+    s16* chunk_ptr;
     long pcmtotal;
     u64 now;
 

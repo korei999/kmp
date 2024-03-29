@@ -17,8 +17,8 @@ struct wav_file
     snd_pcm_format_t format;
     int format_size;
 
-    std::vector<s8> song_data {};
-    std::vector<s8>* chunk_ptr;
+    std::vector<s16> song_data {};
+    std::vector<s16>* chunk_ptr;
     long offset = 0;
 
     wav_file() = default;
