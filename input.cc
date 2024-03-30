@@ -149,8 +149,8 @@ read_input()
                 break;
 
             case KEY_RESIZE:
-                refresh();
             case 12: /* C-l */
+                endwin();
                 print_song_name();
                 print_volume();
                 refresh_windows();

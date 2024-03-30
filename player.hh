@@ -58,7 +58,6 @@ struct alsa
 
     ~alsa();
 
-    int set_channels([[maybe_unused]] u8 _channels);
     int set_hwparams2(snd_pcm_access_t access, int resample);
     int set_swparams();
 

@@ -16,20 +16,20 @@ mp3_file::open_file(std::string_view path)
     if (!handle)
     {
         Die("cannot create handle: %s\n", mpg123_plain_strerror(ret));
-        exit(EXIT_FAILURE);
+        return 1;
     }
 
     ret = mpg123_open_fixed(handle, path.data(), MPG123_STEREO, MPG123_ENC_SIGNED_16);
     if (ret != MPG123_OK)
     {
         Die("mpg123_open_fixed failed: %s\n", mpg123_plain_strerror(ret));
-        exit(EXIT_FAILURE);
+        return 1;
     }
     ret = mpg123_param2(handle, MPG123_VERBOSE, 0, 0);
     if (ret != MPG123_OK)
     {
         Die("mpg123_param2 failed: %s\n", mpg123_plain_strerror(ret));
-        exit(EXIT_FAILURE);
+        return 1;
     }
 
     int enc;
@@ -37,7 +37,7 @@ mp3_file::open_file(std::string_view path)
     if (ret != MPG123_OK)
     {
         Die("mpg123_getformat failed: %s\n", mpg123_plain_strerror(ret));
-        exit(EXIT_FAILURE);
+        return 1;
     }
     total = mpg123_length(handle);
 

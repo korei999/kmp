@@ -50,22 +50,22 @@ wav_file::open_file(const std::string_view path)
     s16 bits_per_sample = read_type_bytes.operator()<decltype(bits_per_sample)>();
 
     /* TODO: figure out how to handle 24 bit Wave */
-    // this->format = SND_PCM_FORMAT_S16_LE;
-    // format_size = sizeof(s16);
+    this->format = SND_PCM_FORMAT_S16_LE;
+    format_size = sizeof(s16);
 
-    switch (bits_per_sample)
-    {
-        case 24:
-            this->format = SND_PCM_FORMAT_S24_LE;
-            this->format_size = 3;
-            break;
+    // switch (bits_per_sample)
+    // {
+        // case 24:
+            // this->format = SND_PCM_FORMAT_S24_LE;
+            // this->format_size = 3;
+            // break;
 
-        case 16:
-        default:
-            this->format = SND_PCM_FORMAT_S16_LE;
-            this->format_size = 2;
-            break;
-    }
+        // case 16:
+        // default:
+            // this->format = SND_PCM_FORMAT_S16_LE;
+            // this->format_size = 2;
+            // break;
+    // }
 
     s16 extention_size = 0; /* size of the extension: 22 */
     s16 valid_bits_per_sample = 0; /* should be lower or equal to bits per sample */

@@ -62,22 +62,6 @@ alsa::~alsa()
 }
 
 int
-alsa::set_channels(u8 _channels)
-{
-    int err;
-
-    /* set the count of channels */
-    err = snd_pcm_hw_params_set_channels(handle, hw_params, _channels);
-    if (err < 0)
-    {
-        Die("Channels count (%u) not available for playbacks: %s\n", _channels, snd_strerror(err));
-        return err;
-    }
-
-    return 0;
-}
-
-int
 alsa::set_hwparams2(snd_pcm_access_t access, int resample)
 {
     unsigned int rrate;
