@@ -5,3 +5,4 @@ Plays two channel Opus, signed 16 bit Wave, mp3 formats.
 ```kmp *``` inside music directory.
 Navigate with vim-like keybinds.
 Searching with `/`.
+`9` and `0` volume.
