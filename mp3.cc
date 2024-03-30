@@ -30,7 +30,9 @@ mp3_file::open_file(std::string_view path)
     ret = mpg123_getformat(handle, &sample_rate, &channels, &enc);
     total = mpg123_length(handle);
 
+#ifdef DEBUG
     Printe("sample_rate: {}, channels: {}, enc: {}, total: {}\n", sample_rate, channels, enc, total);
+#endif
 
     return 0;
 }
