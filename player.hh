@@ -1,6 +1,7 @@
 #pragma once
 #include "main.hh"
 #include "wav.hh"
+#include "mp3.hh"
 
 #include <alsa/asoundlib.h>
 #include <opus/opusfile.h>
@@ -12,6 +13,7 @@ enum class file_t : int
 {
     OPUS,
     WAV,
+    MP3
 };
 
 struct alsa
@@ -38,6 +40,7 @@ struct alsa
     enum file_t type {};
     OggOpusFile* opus_parser {};
     wav_file wav_parser {};
+    mp3_file mp3_parser {};
 
     std::vector<s16> chunk;
     s16* chunk_ptr;
@@ -72,6 +75,7 @@ struct alsa
     void init_file_type();
     void init_opus();
     void init_wav();
+    void init_mp3();
 };
 
 }; /* namespace player */

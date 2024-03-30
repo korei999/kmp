@@ -277,6 +277,10 @@ alsa::left()
             wav_parser.left();
             break;
 
+        case file_t::MP3:
+            mp3_parser.left(now);
+            break;
+
         default:
             Printe("file type ({}) is not set?\n", (int)type);
             break;
@@ -294,6 +298,10 @@ alsa::right()
 
         case file_t::WAV:
             wav_parser.right();
+            break;
+
+        case file_t::MP3:
+            mp3_parser.right(now);
             break;
 
         default:
@@ -319,6 +327,11 @@ alsa::next_chunk()
             now = wav_parser.now();
             break;
 
+        case file_t::MP3:
+            err = mp3_parser.next_chunk();
+            now = mp3_parser.now();
+            break;
+
         default:
             Printe("file type ({}) is not set?\n", (int)type);
             break;
@@ -330,7 +343,7 @@ alsa::next_chunk()
 void 
 alsa::init_file_type()
 {
-    if (current_file.ends_with("opus"))
+    if (current_file.ends_with(".opus"))
     {
 #ifdef DEBUG
         Printe("init type: opus\n");
@@ -338,10 +351,15 @@ alsa::init_file_type()
         type = player::file_t::OPUS;
         init_opus();
     }
-    else if (current_file.ends_with("wav"))
+    else if (current_file.ends_with(".wav"))
     {
         type = player::file_t::WAV;
         init_wav();
+    }
+    else if (current_file.ends_with(".mp3"))
+    {
+        type = player::file_t::MP3;
+        init_mp3();
     }
 }
 
@@ -355,8 +373,8 @@ alsa::init_opus()
 
     if (!opus_parser)
     {
-        Die("op_open_file failed\n");
-        exit(1);
+        Die("error opening opus file '%s'\n", current_file.data());
+        exit(EXIT_FAILURE);
     }
 
     auto link = op_current_link(opus_parser);
@@ -366,7 +384,7 @@ alsa::init_opus()
     format_size = 2;
     format = SND_PCM_FORMAT_S16_LE;
 
-    chunk.resize(period_time * sizeof(s16), 0);
+    chunk.resize(period_time, 0);
 }
 
 void
@@ -374,7 +392,7 @@ alsa::init_wav()
 {
     if (wav_parser.open_file(current_file) != 0)
     {
-        Die("error, opening wav file\n");
+        Die("error opening wav file '%s'\n", current_file.data());
         exit(EXIT_FAILURE);
     }
 
@@ -390,4 +408,27 @@ alsa::init_wav()
 
     chunk.resize(period_time, 0);
     wav_parser.chunk_ptr = &chunk;
+}
+
+void
+alsa::init_mp3()
+{
+    if (mp3_parser.open_file(current_file) != 0)
+    {
+        Die("error opening mp3 file '%s'\n", current_file.data());
+        exit(EXIT_FAILURE);
+    }
+
+    channels = mp3_parser.channels;
+    sample_rate = mp3_parser.sample_rate;
+    pcmtotal = mp3_parser.total;
+
+    format = SND_PCM_FORMAT_S16_LE;
+    format_size = 2;
+
+    mp3_parser.period_time = period_time;
+    mp3_parser.period_size = period_size;
+
+    chunk.resize(period_time, 0);
+    mp3_parser.chunk_ptr = &chunk;
 }

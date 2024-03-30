@@ -5,7 +5,7 @@ include dbg.mk
 CC := clang++ -stdlib=libc++ -fcolor-diagnostics -fansi-escape-codes -fdiagnostics-format=msvc
 WARNING := -Wall -Wextra -Wpedantic
 
-PGKS := alsa opusfile opus ncursesw
+PGKS := alsa opusfile opus ncursesw libmpg123
 PKG := $(shell pkg-config --cflags $(PGKS))
 PKG_LIB := $(shell pkg-config --libs $(PGKS))
 

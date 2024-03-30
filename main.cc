@@ -341,7 +341,7 @@ main(int argc, char* argv[])
     for (long i = 1; i < argc; i++)
     {
         std::string_view song_name = argv[i];
-        if (song_name.ends_with(".opus") || song_name.ends_with(".wav")) {
+        if (song_name.ends_with(".opus") || song_name.ends_with(".wav") || song_name.ends_with(".mp3")) {
             state.song_list.push_back(song_name);
         }
     }
