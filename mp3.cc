@@ -15,19 +15,30 @@ mp3_file::open_file(std::string_view path)
     handle = mpg123_new(nullptr, &ret);
     if (!handle)
     {
-        Printe("cannot create handle: {}\n", mpg123_plain_strerror(ret));
+        Die("cannot create handle: %s\n", mpg123_plain_strerror(ret));
         exit(EXIT_FAILURE);
     }
 
     ret = mpg123_open_fixed(handle, path.data(), MPG123_STEREO, MPG123_ENC_SIGNED_16);
     if (ret != MPG123_OK)
     {
-        Printe("mpg123_open_fixed failed\n");
+        Die("mpg123_open_fixed failed: %s\n", mpg123_plain_strerror(ret));
+        exit(EXIT_FAILURE);
+    }
+    ret = mpg123_param2(handle, MPG123_VERBOSE, 0, 0);
+    if (ret != MPG123_OK)
+    {
+        Die("mpg123_param2 failed: %s\n", mpg123_plain_strerror(ret));
         exit(EXIT_FAILURE);
     }
 
     int enc;
     ret = mpg123_getformat(handle, &sample_rate, &channels, &enc);
+    if (ret != MPG123_OK)
+    {
+        Die("mpg123_getformat failed: %s\n", mpg123_plain_strerror(ret));
+        exit(EXIT_FAILURE);
+    }
     total = mpg123_length(handle);
 
 #ifdef DEBUG

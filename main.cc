@@ -353,7 +353,19 @@ main(int argc, char* argv[])
             break;
 
         std::string_view inq_str = state.song_in_q();
-        play_file(inq_str);
+
+        try
+        {
+            play_file(inq_str);
+        }
+        catch (int err) /* play next on throw */
+        {
+            state.next = true;
+            state.in_q++;
+
+            if (state.in_q == state.size())
+                state.in_q = 0;
+        }
 
         if (state.prev)
         {

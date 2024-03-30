@@ -6,7 +6,6 @@
 #include <string_view>
 #include <vector>
 
-
 struct mp3_file
 {
     mpg123_handle* handle;

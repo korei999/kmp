@@ -19,9 +19,8 @@ alsa::alsa(std::string_view file_path,
 {
     int err;
 
-    ////////////////////////////////////////////////
-    init_file_type();
-    ////////////////////////////////////////////////
+    if (!init_file_type())
+        throw 1;
 
     if ((err = snd_pcm_open(&handle, device.data(), SND_PCM_STREAM_PLAYBACK, 0)) < 0)
     {
@@ -340,30 +339,29 @@ alsa::next_chunk()
     return err;
 }
 
-void 
+bool
 alsa::init_file_type()
 {
     if (current_file.ends_with(".opus"))
     {
-#ifdef DEBUG
-        Printe("init type: opus\n");
-#endif
         type = player::file_t::OPUS;
-        init_opus();
+        return init_opus();
     }
     else if (current_file.ends_with(".wav"))
     {
         type = player::file_t::WAV;
-        init_wav();
+        return init_wav();
     }
     else if (current_file.ends_with(".mp3"))
     {
         type = player::file_t::MP3;
-        init_mp3();
+        return init_mp3();
     }
+    
+    return false;
 }
 
-void 
+bool
 alsa::init_opus()
 {
     /* TODO: i don't get why but this is what works for opus */
@@ -374,7 +372,7 @@ alsa::init_opus()
     if (!opus_parser)
     {
         Die("error opening opus file '%s'\n", current_file.data());
-        exit(EXIT_FAILURE);
+        return false;
     }
 
     auto link = op_current_link(opus_parser);
@@ -385,15 +383,17 @@ alsa::init_opus()
     format = SND_PCM_FORMAT_S16_LE;
 
     chunk.resize(period_time, 0);
+
+    return true;
 }
 
-void
+bool
 alsa::init_wav()
 {
     if (wav_parser.open_file(current_file) != 0)
     {
         Die("error opening wav file '%s'\n", current_file.data());
-        exit(EXIT_FAILURE);
+        return false;
     }
 
     channels = wav_parser.channels;
@@ -408,15 +408,17 @@ alsa::init_wav()
 
     chunk.resize(period_time, 0);
     wav_parser.chunk_ptr = &chunk;
+
+    return true;
 }
 
-void
+bool
 alsa::init_mp3()
 {
     if (mp3_parser.open_file(current_file) != 0)
     {
         Die("error opening mp3 file '%s'\n", current_file.data());
-        exit(EXIT_FAILURE);
+        return false;
     }
 
     channels = mp3_parser.channels;
@@ -431,4 +433,6 @@ alsa::init_mp3()
 
     chunk.resize(period_time, 0);
     mp3_parser.chunk_ptr = &chunk;
+
+    return true;
 }

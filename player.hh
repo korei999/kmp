@@ -72,10 +72,10 @@ struct alsa
 
     int next_chunk();
 
-    void init_file_type();
-    void init_opus();
-    void init_wav();
-    void init_mp3();
+    bool init_file_type();
+    bool init_opus();
+    bool init_wav();
+    bool init_mp3();
 };
 
 }; /* namespace player */

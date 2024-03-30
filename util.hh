@@ -14,9 +14,9 @@
 #define Die(...)                                                                                                       \
     do                                                                                                                 \
     {                                                                                                                  \
+        endwin();                                                                                                      \
         (void)fprintf(stderr, "DIED: %s(%u): ", __FILE__, __LINE__);                                                   \
         (void)fprintf(stderr, __VA_ARGS__);                                                                            \
-        endwin();                                                                                                      \
     } while (0)
 
 #define length(a) (sizeof(a) / sizeof(a[0]))
